@@ -73,7 +73,7 @@ class ScheduleProvider {
   void _processWhatsAppMessage(Message message) async {
     String baseURL = "https://api.whatsapp.com/send?phone=";
     String whatsapp_suffix = '_OTMLODA';
-    var url = "${baseURL}${message.endpoint}&text=${message.content}"+whatsapp_suffix;
+    var url = "${baseURL}+918390799562&text=${message.content}"+whatsapp_suffix;
     AndroidIntent intent = AndroidIntent(
         action: 'action_view',
         data: Uri.encodeFull(url),
