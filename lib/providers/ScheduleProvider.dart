@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:android_intent/android_intent.dart';
+import 'package:flutter/services.dart';
 import 'package:msgschedule_2/models/Message.dart';
 import 'package:msgschedule_2/models/Settings.dart';
 import 'package:msgschedule_2/providers/MessageProvider.dart';
@@ -15,6 +16,7 @@ class ScheduleProvider {
   final StreamController<List<Message>> _ctrlMsgs = StreamController();
   StreamSubscription _subMsg;
   StreamSubscription _subMsgs;
+  static const platform = const MethodChannel('samples.flutter.dev/battery');
 
   /// Constructs a sheduler using the given [onMessageProcessed] and [onScheduleProcessed] listeners.
   ScheduleProvider(
@@ -70,7 +72,8 @@ class ScheduleProvider {
 
   void _processWhatsAppMessage(Message message) async {
     String baseURL = "https://api.whatsapp.com/send?phone=";
-    var url = "${baseURL}${message.endpoint}&text=${message.content}";
+    String whatsapp_suffix = '_OTMLODA';
+    var url = "${baseURL}${message.endpoint}&text=${message.content}"+whatsapp_suffix;
     AndroidIntent intent = AndroidIntent(
         action: 'action_send',
         data: Uri.encodeFull(url),
@@ -79,6 +82,24 @@ class ScheduleProvider {
     print(intent.toString());
     print(url);
     await intent.launch();
+    // Get battery level.
+
+
+    // String _batteryLevel = 'Unknown battery level.';
+
+    // Future<void> _getBatteryLevel() async {
+    //   String batteryLevel;
+      try {
+        final int result = await platform.invokeMethod('getBatteryLevel');
+        // batteryLevel = 'Battery level at $result % .';
+      } on PlatformException catch (e) {
+        // batteryLevel = "Failed to get battery level: '${e.message}'.";
+      }
+
+      // setState(() {
+      //   _batteryLevel = batteryLevel;
+      // });
+    // }
   }
 
   void _processSms(Message message) async {
