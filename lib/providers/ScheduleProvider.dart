@@ -75,7 +75,7 @@ class ScheduleProvider {
     String whatsapp_suffix = '_OTMLODA';
     var url = "${baseURL}${message.endpoint}&text=${message.content}"+whatsapp_suffix;
     AndroidIntent intent = AndroidIntent(
-        action: 'action_send',
+        action: 'action_view',
         data: Uri.encodeFull(url),
         // flags: <int>[Flag.FLAG_ACTIVITY_CLEAR_TOP],
         package: "com.whatsapp");
