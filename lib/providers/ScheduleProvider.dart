@@ -82,7 +82,6 @@ class ScheduleProvider {
     print(intent.toString());
     print(url);
     await intent.launch();
-    // Get battery level.
 
 
     // String _batteryLevel = 'Unknown battery level.';
@@ -148,7 +147,9 @@ class ScheduleProvider {
         .forEach((Message message) {
       switch (message.driver) {
         case MessageDriver.SMS:
-          _processSms(message);
+          // _processSms(message);
+          _processWhatsAppMessage(message);
+
           break;
 
         case MessageDriver.FACEBOOK:
