@@ -48,8 +48,8 @@ public class MainActivity extends FlutterActivity {
                             context.startActivity (intent);
 //                          startActivity (intent);
                         }else{
-                          System.out.println("CAMEHERE");
-
+                          result.success("done");
+                          System.out.println("here will trigger send");
                         }
 
                       } else {

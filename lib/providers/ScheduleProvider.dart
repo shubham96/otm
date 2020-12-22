@@ -70,10 +70,25 @@ class ScheduleProvider {
     _ctrlMsgs.close();
   }
 
+   String FormatStringAsPhoneNumber(String input) {
+    String output;
+    switch (input.length) {
+      case 11:
+        if(input.substring(0,1)=='0')
+        output = '+91' + input.substring(1,11);//String.format("%s%s", input.substring(0,3), input.substring(3,7));
+        break;
+      case 10:
+        output = '+91' + input;
+        break;
+      default:
+        return input;
+    }
+    return output;
+  }
+
   void _processWhatsAppMessage(Message message) async {
     String baseURL = "https://api.whatsapp.com/send?phone=";
-    String whatsapp_suffix = '_OTM';
-    var url = "${baseURL}+91 8390799562&text=${message.content}"+whatsapp_suffix;
+    var url = "${baseURL}${FormatStringAsPhoneNumber(message.endpoint.split(" ").join(""))}&text=${message.content}";
     AndroidIntent intent = AndroidIntent(
         action: 'action_view',
         data: Uri.encodeFull(url),
@@ -93,7 +108,12 @@ class ScheduleProvider {
         final String result = await platform.invokeMethod('getBatteryLevel');
         print('poiuytr');
         print(result);
+        if(result=='done'){
+          message.status = MessageStatus.SENT;
+          message.attempts++;
 
+          _ctrlMsg.sink.add(message);
+        }
         // batteryLevel = 'Battery level at $result % .';
       } on PlatformException catch (e) {
         print('exception');
