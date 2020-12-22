@@ -15,10 +15,15 @@ import android.os.Build.VERSION_CODES;
 import android.accessibilityservice.AccessibilityService;
 import android.content.Context;
 import androidx.annotation.NonNull;
-import com.sibsp.apps.msgschedule.*;
+import com.sibsp.apps.msgschedule.R;
 import android.provider.Settings;
+import android.widget.Toast;
+import android.util.Log;
+
 //package WhatsappAccessibilityService;
-import WhatsappAccessibilityService.WhatsappAccessibilityService;
+//import WhatsappAccessibilityService.WhatsappAccessibilityService;
+import com.sibsp.apps.msgschedule.WhatsappAccessibilityService;
+
 import android.text.TextUtils;
 public class MainActivity extends FlutterActivity {
   private static final String CHANNEL = "samples.flutter.dev/battery";
@@ -27,15 +32,24 @@ public class MainActivity extends FlutterActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     GeneratedPluginRegistrant.registerWith(this);
-
     new MethodChannel(getFlutterView(), CHANNEL)
             .setMethodCallHandler(
                     (call, result) -> {
+                      Log.d(CHANNEL, "onServiceConnected.");
+
+//                      result.success(call.method);
+//                      Toast.makeText(call.method.equals("getBatteryLevel"), "connectd", Toast.LENGTH_SHORT).show();
+
                       if (call.method.equals("getBatteryLevel")) {
                         Context context = this;
+                        System.out.println("qwrtyuiop");
                         if (!isAccessibilityOn (this, WhatsappAccessibilityService.class)) {
                           Intent intent = new Intent (Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                          context.startActivity (intent);
+                            context.startActivity (intent);
+//                          startActivity (intent);
+                        }else{
+                          System.out.println("CAMEHERE");
+
                         }
 
                       } else {
@@ -49,12 +63,11 @@ public class MainActivity extends FlutterActivity {
   private boolean isAccessibilityOn (Context context, Class<? extends AccessibilityService> clazz) {
     int accessibilityEnabled = 0;
     final String service = context.getPackageName () + "/" + clazz.getCanonicalName ();
-    System.out.println(service);
     try {
       accessibilityEnabled = Settings.Secure.getInt (context.getApplicationContext ().getContentResolver (), Settings.Secure.ACCESSIBILITY_ENABLED);
     } catch (Settings.SettingNotFoundException ignored) {  }
 
-    TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
+    TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter (':');
 
     if (accessibilityEnabled == 1) {
       String settingValue = Settings.Secure.getString (context.getApplicationContext ().getContentResolver (), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
@@ -72,7 +85,6 @@ public class MainActivity extends FlutterActivity {
 
     return false;
   }
-
 
 
 }

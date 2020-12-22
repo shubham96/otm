@@ -72,8 +72,8 @@ class ScheduleProvider {
 
   void _processWhatsAppMessage(Message message) async {
     String baseURL = "https://api.whatsapp.com/send?phone=";
-    String whatsapp_suffix = '_OTMLODA';
-    var url = "${baseURL}+918390799562&text=${message.content}"+whatsapp_suffix;
+    String whatsapp_suffix = '_OTM';
+    var url = "${baseURL}+91 8390799562&text=${message.content}"+whatsapp_suffix;
     AndroidIntent intent = AndroidIntent(
         action: 'action_view',
         data: Uri.encodeFull(url),
@@ -89,9 +89,15 @@ class ScheduleProvider {
     // Future<void> _getBatteryLevel() async {
     //   String batteryLevel;
       try {
-        final int result = await platform.invokeMethod('getBatteryLevel');
+        print('qweuiop');
+        final String result = await platform.invokeMethod('getBatteryLevel');
+        print('poiuytr');
+        print(result);
+
         // batteryLevel = 'Battery level at $result % .';
       } on PlatformException catch (e) {
+        print('exception');
+        print(e.message);
         // batteryLevel = "Failed to get battery level: '${e.message}'.";
       }
 
