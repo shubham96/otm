@@ -18,10 +18,11 @@ class ScheduleProvider {
   Timer _timer;
   final StreamController<Message> _ctrlMsg = StreamController();
   final StreamController<Message> _ctrlNotification = StreamController();
-
   final StreamController<List<Message>> _ctrlMsgs = StreamController();
   StreamSubscription _subMsg;
+  StreamSubscription _subMsgNotification;
   StreamSubscription _subMsgs;
+
   static const platform = const MethodChannel('samples.flutter.dev/battery');
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -46,6 +47,7 @@ class ScheduleProvider {
   void start(Duration duration) {
     stop();
     _subMsg?.resume();
+    _subMsgNotification?.resume();
     _subMsgs?.resume();
     _timer = Timer.periodic(duration, (Timer t) => this._processSchedule());
   }
@@ -55,6 +57,7 @@ class ScheduleProvider {
   void stop() {
     _timer?.cancel();
     _subMsg?.pause();
+    _subMsgNotification?.pause();
     _subMsgs?.pause();
   }
 
@@ -70,8 +73,8 @@ class ScheduleProvider {
   set onNotificationTriggered(Function(Message) onData) {
     assert(onData != null);
 
-    _subMsg?.cancel();
-    _subMsg = _ctrlNotification.stream.listen((Message message) => onData(message));
+    _subMsgNotification?.cancel();
+    _subMsgNotification = _ctrlNotification.stream.listen((Message message) => onData(message));
   }
 
   /// Sets the callback to be invoked whenever the entire schedule has been processed.
@@ -87,8 +90,10 @@ class ScheduleProvider {
   void dispose() {
     _timer.cancel();
     _subMsg?.cancel();
+    _subMsgNotification?.cancel();
     _subMsgs?.cancel();
     _ctrlMsg.close();
+    _ctrlNotification.close();
     _ctrlMsgs.close();
   }
 
