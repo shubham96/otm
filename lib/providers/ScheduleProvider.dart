@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:android_intent/android_intent.dart';
 import 'package:flutter/services.dart';
@@ -7,21 +8,34 @@ import 'package:msgschedule_2/models/Settings.dart';
 import 'package:msgschedule_2/providers/MessageProvider.dart';
 import 'package:msgschedule_2/providers/SettingsProvider.dart';
 import 'package:sms/sms.dart';
+// import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart' hide Message;
+import 'package:is_lock_screen/is_lock_screen.dart';
 
 ///
 class ScheduleProvider {
   Timer _timer;
   final StreamController<Message> _ctrlMsg = StreamController();
+  final StreamController<Message> _ctrlNotification = StreamController();
+
   final StreamController<List<Message>> _ctrlMsgs = StreamController();
   StreamSubscription _subMsg;
   StreamSubscription _subMsgs;
   static const platform = const MethodChannel('samples.flutter.dev/battery');
 
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+
   /// Constructs a sheduler using the given [onMessageProcessed] and [onScheduleProcessed] listeners.
   ScheduleProvider(
-      {dynamic Function(Message) onMessageProcessed,
+      {dynamic Function(Message) onMessageProcessed,dynamic Function(Message) onNotificationTriggered,
       dynamic Function(List<Message>) onScheduleProcessed}) {
+    print('lodu');
+    print(onMessageProcessed);
+    print(onNotificationTriggered);
+    print(onScheduleProcessed);
+
     if (onMessageProcessed != null)
       this.onMessageProcessed = onMessageProcessed;
     if (onScheduleProcessed != null)
@@ -50,6 +64,14 @@ class ScheduleProvider {
 
     _subMsg?.cancel();
     _subMsg = _ctrlMsg.stream.listen((Message message) => onData(message));
+  }
+
+  /// Sets the callback to be invoked whenever a single message has been processed.
+  set onNotificationTriggered(Function(Message) onData) {
+    assert(onData != null);
+
+    _subMsg?.cancel();
+    _subMsg = _ctrlNotification.stream.listen((Message message) => onData(message));
   }
 
   /// Sets the callback to be invoked whenever the entire schedule has been processed.
@@ -86,23 +108,28 @@ class ScheduleProvider {
     return output;
   }
 
+
+  void onClickNotificationTriggerWhatsapp(message){
+    print('chal ja bhai');
+    print(message);
+    // print(json.decode(message));
+    // var messageId =  json.decode(message).id;
+    // print(messageId);
+    // message.content = ;
+    var decodedMessage = Message.fromJson(json.decode(message));
+    _processWhatsAppMessage(decodedMessage);
+  }
+
   void _processWhatsAppMessage(Message message) async {
     String baseURL = "https://api.whatsapp.com/send?phone=";
     var url = "${baseURL}${FormatStringAsPhoneNumber(message.endpoint.split(" ").join(""))}&text=${message.content}";
     AndroidIntent intent = AndroidIntent(
         action: 'action_view',
         data: Uri.encodeFull(url),
-        // flags: <int>[Flag.FLAG_ACTIVITY_CLEAR_TOP],
         package: "com.whatsapp");
     print(intent.toString());
     print(url);
     await intent.launch();
-
-
-    // String _batteryLevel = 'Unknown battery level.';
-
-    // Future<void> _getBatteryLevel() async {
-    //   String batteryLevel;
       try {
         print('qweuiop');
         final String result = await platform.invokeMethod('getBatteryLevel');
@@ -111,21 +138,28 @@ class ScheduleProvider {
         if(result=='done'){
           message.status = MessageStatus.SENT;
           message.attempts++;
-
+          print(message.status);
           _ctrlMsg.sink.add(message);
         }
-        // batteryLevel = 'Battery level at $result % .';
       } on PlatformException catch (e) {
         print('exception');
         print(e.message);
-        // batteryLevel = "Failed to get battery level: '${e.message}'.";
       }
-
-      // setState(() {
-      //   _batteryLevel = batteryLevel;
-      // });
-    // }
   }
+
+  // void _processEmail(Message message) async {
+  //   final Email email = Email(
+  //     body: 'Email body',
+  //     subject: 'Email subject',
+  //     recipients: ['pateldhawal4@gmail.com'],
+  //     // cc: ['cc@example.com'],
+  //     // bcc: ['bcc@example.com'],
+  //     // attachmentPaths: ['/path/to/attachment.zip'],
+  //     isHTML: false,
+  //   );
+  //
+  //   await FlutterEmailSender.send(email);
+  // }
 
   void _processSms(Message message) async {
     final provider = SimCardsProvider();
@@ -158,10 +192,18 @@ class ScheduleProvider {
     await sender.sendSms(smsMessage, simCard: simToUse);
   }
 
+  void _triggershowNotificationWithDefaultSound(Message message) async {
+    print("message.endpoint");
+
+    print(message.endpoint);
+    _ctrlNotification.sink.add(message);
+  }
+
   void _processSchedule() async {
     final Settings settings =
         await SettingsProvider.getInstance().getSettings();
     final messages = await MessageProvider.getInstance().getMessages();
+    bool isLocked = await isLockScreen();
 
     messages
         .takeWhile((Message message) =>
@@ -171,21 +213,38 @@ class ScheduleProvider {
                         message.attempts < settings.message.maxAttempts))) &&
             DateTime.now().millisecondsSinceEpoch >= message.executedAt)
         .forEach((Message message) {
+          print('message.driver');
+          print(message.driver);
+          print(MessageDriver.SMS);
+          print(MessageDriver.Whatsapp);
+          print(MessageDriver.Email);
+
       switch (message.driver) {
         case MessageDriver.SMS:
-          // _processSms(message);
-          _processWhatsAppMessage(message);
+          _processSms(message);
+          // _processWhatsAppMessage(message);
 
           break;
 
-        case MessageDriver.FACEBOOK:
+        case MessageDriver.Email:
+          // _processEmail(message);
+          // _triggershowNotificationWithDefaultSound(message);
           break;
 
         case MessageDriver.Whatsapp:
-          _processWhatsAppMessage(message);
+          print('islocked');
+          print(isLocked);
+          if(!isLocked)
+            _processWhatsAppMessage(message);
+          else{
+            _triggershowNotificationWithDefaultSound(message);
+          }
       }
     });
 
     if (messages.length > 0) _ctrlMsgs.sink.add(messages);
   }
+
+
+
 }

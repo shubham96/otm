@@ -1,6 +1,7 @@
 
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'package:msgschedule_2/pages/settings/SettingsPage.dart';
 import 'package:msgschedule_2/providers/DialogProvider.dart';
 import 'package:msgschedule_2/providers/ScheduleProvider.dart';
 import './Schedule.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart' hide Message;
 
 
 class SchedulePage extends StatefulWidget {
@@ -50,10 +52,19 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    var android = new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var iOS = new IOSInitializationSettings();
+    var initSetttings = new InitializationSettings(android, iOS);
+    flutterLocalNotificationsPlugin.initialize(initSetttings,
+        onSelectNotification: onSelectNotification);
     _tabController = TabController(length: 4, vsync: this, initialIndex: 0);
     _refreshMessages();
 
     _scheduleProvider.onMessageProcessed = (Message message) => _messageBloc.updateMessage(message);
+    _scheduleProvider.onNotificationTriggered = (Message message) => _showNotificationWithDefaultSound(message, flutterLocalNotificationsPlugin);
+
     _scheduleProvider.start(Duration(seconds: 15));
 
     _refreshTimer = Timer.periodic(Duration(seconds: 30), (Timer t) => _refreshMessages());
@@ -213,6 +224,41 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
 
       default: break;
     }
+  }
+
+  Future onSelectNotification(payload) {
+    // debugPrint("payload : $payload");
+    print('the payload');
+    print(payload);
+    // Message message = json.decode(payload);
+    // print(json.decode(payload));
+    // showDialog(
+    //   context: context,
+    //   builder: (_) => new AlertDialog(
+    //     title: new Text('Notification'),
+    //     content: new Text('$payload'),
+    //   ),
+    // );
+    _scheduleProvider.onClickNotificationTriggerWhatsapp(payload);
+  }
+
+  Future _showNotificationWithDefaultSound(Message message, flutterLocalNotificationsPlugin) async {
+    var android = new AndroidNotificationDetails(
+        'channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
+        priority: Priority.High,importance: Importance.Max
+    );
+    var iOS = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        android, iOS);
+    print('click to send');
+    String payload = jsonEncode(message);
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Click to send',
+      message.content,
+      platformChannelSpecifics,
+      payload: payload,
+    );
   }
 
   void _onCreateMessage() {

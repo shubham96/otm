@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:contact_picker/contact_picker.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:msgschedule_2/blocs/MessageBloc.dart';
 import 'package:msgschedule_2/models/Message.dart';
 import 'package:msgschedule_2/models/Settings.dart';
@@ -41,6 +42,8 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
   final _dateCtrl = TextEditingController();
   final _timeCtrl = TextEditingController();
   final _messageCtrl = TextEditingController();
+
+  MessageDriver _driverCtrl = MessageDriver.SMS;
 
   String _phoneNumberError;
   String _dateError;
@@ -186,6 +189,40 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
                 )
               ),
             ),
+
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text('Schedule message for:'),
+                IconButton(
+                  icon: Icon(FontAwesomeIcons.sms, color: _driverCtrl == MessageDriver.SMS ? Colors.blue: Colors.grey),
+                  tooltip: 'SMS',
+                  onPressed: () {
+                    setState(() {
+                      _driverCtrl = MessageDriver.SMS;
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: Icon(FontAwesomeIcons.whatsapp, color: _driverCtrl == MessageDriver.Whatsapp ? Colors.blue: Colors.grey),
+                  tooltip: 'Whatsapp',
+                  onPressed: () {
+                    setState(() {
+                      _driverCtrl = MessageDriver.Whatsapp;
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: Icon(FontAwesomeIcons.envelope, color: _driverCtrl == MessageDriver.Email ? Colors.blue: Colors.grey),
+                  tooltip: 'Email',
+                  onPressed: () {
+                    setState(() {
+                      _driverCtrl = MessageDriver.Email;
+                    });
+                  },
+                ),
+              ],
+            ),
           ],
         )
       ),
@@ -240,7 +277,7 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
       createdAt: widget?.message?.createdAt ?? DateTime.now().millisecondsSinceEpoch,
       attempts: widget?.message?.attempts ?? 0,
       endpoint: _phoneNumberCtrl.text,
-      driver: widget?.message?.driver ?? MessageDriver.SMS,
+      driver: _driverCtrl,
       status: widget?.message?.status ?? MessageStatus.PENDING,
       isArchived: widget?.message?.isArchived ?? false,
       executedAt: DateTime(

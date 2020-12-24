@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:msgschedule_2/providers/MessageProvider.dart';
 import 'pages/schedule/SchedulePage.dart';
-
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 Future main() async {
   await WidgetsFlutterBinding.ensureInitialized();
 
@@ -14,8 +14,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-  final String _appName = 'MsgSchedule';
+  final String _appName = 'OTM';
   Widget _home;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   _MyAppState();
 
@@ -23,7 +24,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     _home = SchedulePage(title: _appName);
+
     // _home = PreviewPage as Widget;
+  }
+
+  Future onSelectNotification(String payload) {
+    debugPrint("payload : $payload");
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text('Notification'),
+        content: new Text('$payload'),
+      ),
+    );
   }
 
   @override
@@ -52,6 +65,24 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         accentColor: Colors.orange,
       ),
       home: _home,
+    );
+  }
+
+
+  Future _showNotificationWithDefaultSound() async {
+    var android = new AndroidNotificationDetails(
+        'channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
+        priority: Priority.High,importance: Importance.Max
+    );
+    var iOS = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        android, iOS);
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'New Post',
+      'How to Show Notification in Flutter',
+      platformChannelSpecifics,
+      payload: 'Default_Sound',
     );
   }
 }

@@ -90,4 +90,4 @@ class Message {
 
 enum MessageStatus { PENDING, SENT, FAILED }
 
-enum MessageDriver { SMS, FACEBOOK, Whatsapp }
+enum MessageDriver { SMS, Email, Whatsapp }

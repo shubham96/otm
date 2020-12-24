@@ -45,11 +45,14 @@ class MessageBloc {
 
   Future<bool> updateMessage(final Message message) async {
     final bool r = await _mp.updateMessage(message);
+    print('updateMessage');
 
     for (int i = 0; i < _list.length; ++i)
       // if message already exists, then just update the message in the list,
       // and emit the list as is (without any new elements).
       if (_list[i].id == message.id){
+        print('updateMessage1234567890');
+        print(message.toString());
         _list[i] = message;
         _ctrl.sink.add(_list);
         return r;
