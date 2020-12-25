@@ -163,8 +163,8 @@ class ScheduleProvider {
       password = prefs.getString('mailpassword');
     }
   print('the recipient');
-    print(message1.endpoint);
-
+    print(username);
+    print(password);
     final smtpServer = gmail(username, password);
 
     final message = mailer.Message()
@@ -187,6 +187,8 @@ class ScheduleProvider {
       print('Message sent: ' + sendReport.toString());
     } on mailer.MailerException catch (e) {
       print('Message not sent.');
+      print(e);
+
       message1.status = MessageStatus.FAILED;
       message1.attempts++;
       _ctrlMsg.sink.add(message1);

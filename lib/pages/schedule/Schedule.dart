@@ -8,6 +8,7 @@ import 'package:msgschedule_2/models/Message.dart';
 import 'package:msgschedule_2/pages/schedule/ViewMessage.dart';
 import 'package:msgschedule_2/providers/DateTimeFormator.dart';
 import 'package:sms/contact.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 
 
@@ -91,7 +92,7 @@ class _ScheduleState extends State<Schedule> {
             key: Key(message.id.toString()),
             child: */ ListTile(
                 isThreeLine: true,
-                leading: Icon(message.driver == MessageDriver.SMS ? Icons.textsms : Icons.cloud),
+                leading: Icon(getIcon(message.driver)),
                 title: Text(_numberNameMapper[message.endpoint] ?? message.endpoint),
                 subtitle: Text(
                   message.content.substring(0, message.content.length > maxMsgLen ? maxMsgLen : null) +
@@ -124,6 +125,20 @@ class _ScheduleState extends State<Schedule> {
         );
       }
     );
+  }
+
+  getIcon(driver){
+    switch (driver) {
+      case MessageDriver.SMS:
+          return Icons.textsms;
+        break;
+      case MessageDriver.Whatsapp:
+        return FontAwesomeIcons.whatsapp;
+        break;
+      case MessageDriver.Email:
+        return FontAwesomeIcons.envelope;
+        break;
+    }
   }
 
   void _mapNamesToNumbers() {

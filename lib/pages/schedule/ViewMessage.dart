@@ -146,6 +146,20 @@ class _ViewMessageState extends State<ViewMessage> {
                             Text(_message.status.toString())
                           ]
                         ),
+                        ((_message.status == MessageStatus.FAILED) && (_message.driver == MessageDriver.Email)) ?
+                        TableRow(
+                            children: [
+                              Text('Reason: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Check your mail and allow less secure apps.')
+                            ]
+                        )
+                        :
+                        TableRow(
+                            children: [
+                              Text('', style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('')
+                            ]
+                        ),
                       ],
                     )
                   )
