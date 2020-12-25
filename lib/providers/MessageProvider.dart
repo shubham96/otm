@@ -59,6 +59,7 @@ class MessageProvider {
       CREATE TABLE $_tblMessages (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           content TEXT,
+          subject TEXT,
           driver INTEGER,
           endpoint TEXT,
           createdAt INTEGER,
@@ -115,9 +116,10 @@ class MessageProvider {
 
     final int i = await _database.rawInsert(
       'INSERT INTO $_tblMessages '
-      'VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [
       message.content,
+      message.subject,
       message.driver.index,
       message.endpoint,
       message.createdAt,
@@ -138,6 +140,7 @@ class MessageProvider {
     final int i = await _database.rawUpdate(
       'UPDATE $_tblMessages '
       'SET content = ?, '
+          'subject = ?, '
           'driver = ?, '
           'endpoint = ?, '
           'createdAt = ?, '
@@ -147,6 +150,7 @@ class MessageProvider {
           'isArchived = ? '
       'WHERE id = ?', [
       message.content,
+      message.subject,
       message.driver.index,
       message.endpoint,
       message.createdAt,
@@ -230,6 +234,7 @@ class MessageProvider {
     message.attempts = 1;
     message.driver = MessageDriver.SMS;
     message.content = 'Die today or die';
+    message.subject = '';
     message.createdAt = DateTime.now().millisecondsSinceEpoch;
     message.executedAt = DateTime.now().millisecondsSinceEpoch;
     message.endpoint = '409350345';

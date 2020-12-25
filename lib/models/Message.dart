@@ -12,6 +12,9 @@ class Message {
   /// The destination of the message.
   String endpoint;
 
+  /// The message subject.
+  String subject;
+
   /// The message content.
   String content;
 
@@ -36,6 +39,7 @@ class Message {
       this.attempts,
       this.isArchived,
       this.content,
+      this.subject,
       this.createdAt,
       this.executedAt,
       this.driver,
@@ -48,6 +52,7 @@ class Message {
     attempts = data['attempts'];
     isArchived = data['isArchived'] != 0;
     content = data['content'];
+    subject = data['subject'];
     createdAt = data['createdAt'];
     executedAt = data['executedAt'];
     driver = MessageDriver.values[
@@ -64,6 +69,7 @@ class Message {
       'attempts': attempts,
       'isArchived': isArchived ? 1 : 0,
       'content': content,
+      'subject': subject,
       'createdAt': createdAt,
       'executedAt': executedAt,
       'driver': driver.index,

@@ -8,10 +8,12 @@ import 'package:msgschedule_2/models/Settings.dart';
 import 'package:msgschedule_2/providers/MessageProvider.dart';
 import 'package:msgschedule_2/providers/SettingsProvider.dart';
 import 'package:sms/sms.dart';
-// import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:mailer/mailer.dart' as mailer;
+import 'package:mailer/smtp_server.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' hide Message;
 import 'package:is_lock_screen/is_lock_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 ///
 class ScheduleProvider {
@@ -152,19 +154,58 @@ class ScheduleProvider {
       }
   }
 
-  // void _processEmail(Message message) async {
-  //   final Email email = Email(
-  //     body: 'Email body',
-  //     subject: 'Email subject',
-  //     recipients: ['pateldhawal4@gmail.com'],
-  //     // cc: ['cc@example.com'],
-  //     // bcc: ['bcc@example.com'],
-  //     // attachmentPaths: ['/path/to/attachment.zip'],
-  //     isHTML: false,
-  //   );
-  //
-  //   await FlutterEmailSender.send(email);
-  // }
+  void _processEmail(Message message1) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String username = '';
+    String password = '';
+    if(prefs.containsKey('mailid')){
+      username = prefs.getString('mailid');
+      password = prefs.getString('mailpassword');
+    }
+  print('the recipient');
+    print(message1.endpoint);
+
+    final smtpServer = gmail(username, password);
+
+    final message = mailer.Message()
+      ..from = mailer.Address(username, username)
+      ..recipients.add(message1.endpoint)
+      // ..ccRecipients.addAll(['destCc1@example.com', 'destCc2@example.com'])
+      // ..bccRecipients.add(mailer.Address('bccAddress@example.com'))
+      ..subject = message1.subject
+      ..text = message1.content;
+    print(mailer.Address(username));
+    print(message1.endpoint);
+    print(message1.subject);
+    print(message1.content);
+
+    try {
+      final sendReport = await mailer.send(message, smtpServer);
+      message1.status = MessageStatus.SENT;
+      message1.attempts++;
+      _ctrlMsg.sink.add(message1);
+      print('Message sent: ' + sendReport.toString());
+    } on mailer.MailerException catch (e) {
+      print('Message not sent.');
+      message1.status = MessageStatus.FAILED;
+      message1.attempts++;
+      _ctrlMsg.sink.add(message1);
+      for (var p in e.problems) {
+        print('Problem: ${p.code}: ${p.msg}');
+      }
+    }
+    // final Email email = Email(
+    //   body: 'Email body',
+    //   subject: 'Email subject',
+    //   recipients: ['pateldhawal4@gmail.com', message.endpoint],
+    //   // cc: ['cc@example.com'],
+    //   // bcc: ['bcc@example.com'],
+    //   // attachmentPaths: ['/path/to/attachment.zip'],
+    //   isHTML: false,
+    // );
+
+    // await FlutterEmailSender.send(email);
+  }
 
   void _processSms(Message message) async {
     final provider = SimCardsProvider();
@@ -218,11 +259,6 @@ class ScheduleProvider {
                         message.attempts < settings.message.maxAttempts))) &&
             DateTime.now().millisecondsSinceEpoch >= message.executedAt)
         .forEach((Message message) {
-          print('message.driver');
-          print(message.driver);
-          print(MessageDriver.SMS);
-          print(MessageDriver.Whatsapp);
-          print(MessageDriver.Email);
 
       switch (message.driver) {
         case MessageDriver.SMS:
@@ -232,7 +268,7 @@ class ScheduleProvider {
           break;
 
         case MessageDriver.Email:
-          // _processEmail(message);
+          _processEmail(message);
           // _triggershowNotificationWithDefaultSound(message);
           break;
 
