@@ -15,6 +15,15 @@ class Message {
   /// The message subject.
   String subject;
 
+  /// The message subject.
+  String mailHost;
+
+  /// The message subject.
+  String mailId;
+
+  /// The message subject.
+  String mailPassword;
+
   /// The message content.
   String content;
 
@@ -40,6 +49,9 @@ class Message {
       this.isArchived,
       this.content,
       this.subject,
+      this.mailHost,
+      this.mailId,
+      this.mailPassword,
       this.createdAt,
       this.executedAt,
       this.driver,
@@ -53,6 +65,9 @@ class Message {
     isArchived = data['isArchived'] != 0;
     content = data['content'];
     subject = data['subject'];
+    mailHost = data['mailHost'];
+    mailId = data['mailId'];
+    mailPassword = data['mailPassword'];
     createdAt = data['createdAt'];
     executedAt = data['executedAt'];
     driver = MessageDriver.values[
@@ -70,6 +85,9 @@ class Message {
       'isArchived': isArchived ? 1 : 0,
       'content': content,
       'subject': subject,
+      'mailHost': mailHost,
+      'mailId': mailId,
+      'mailPassword': mailPassword,
       'createdAt': createdAt,
       'executedAt': executedAt,
       'driver': driver.index,

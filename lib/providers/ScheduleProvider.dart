@@ -11,7 +11,8 @@ import 'package:sms/sms.dart';
 import 'package:mailer/mailer.dart' as mailer;
 import 'package:mailer/smtp_server.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart' hide Message;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    hide Message;
 import 'package:is_lock_screen/is_lock_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,10 +30,10 @@ class ScheduleProvider {
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
-
   /// Constructs a sheduler using the given [onMessageProcessed] and [onScheduleProcessed] listeners.
   ScheduleProvider(
-      {dynamic Function(Message) onMessageProcessed,dynamic Function(Message) onNotificationTriggered,
+      {dynamic Function(Message) onMessageProcessed,
+      dynamic Function(Message) onNotificationTriggered,
       dynamic Function(List<Message>) onScheduleProcessed}) {
     print('lodu');
     print(onMessageProcessed);
@@ -76,7 +77,8 @@ class ScheduleProvider {
     assert(onData != null);
 
     _subMsgNotification?.cancel();
-    _subMsgNotification = _ctrlNotification.stream.listen((Message message) => onData(message));
+    _subMsgNotification =
+        _ctrlNotification.stream.listen((Message message) => onData(message));
   }
 
   /// Sets the callback to be invoked whenever the entire schedule has been processed.
@@ -99,12 +101,14 @@ class ScheduleProvider {
     _ctrlMsgs.close();
   }
 
-   String FormatStringAsPhoneNumber(String input) {
+  String FormatStringAsPhoneNumber(String input) {
     String output;
     switch (input.length) {
       case 11:
-        if(input.substring(0,1)=='0')
-        output = '+91' + input.substring(1,11);//String.format("%s%s", input.substring(0,3), input.substring(3,7));
+        if (input.substring(0, 1) == '0')
+          output = '+91' +
+              input.substring(1,
+                  11); //String.format("%s%s", input.substring(0,3), input.substring(3,7));
         break;
       case 10:
         output = '+91' + input;
@@ -115,8 +119,7 @@ class ScheduleProvider {
     return output;
   }
 
-
-  void onClickNotificationTriggerWhatsapp(message){
+  void onClickNotificationTriggerWhatsapp(message) {
     print('chal ja bhai');
     print(message);
     // print(json.decode(message));
@@ -129,7 +132,8 @@ class ScheduleProvider {
 
   void _processWhatsAppMessage(Message message) async {
     String baseURL = "https://api.whatsapp.com/send?phone=";
-    var url = "${baseURL}${FormatStringAsPhoneNumber(message.endpoint.split(" ").join(""))}&text=${message.content}";
+    var url =
+        "${baseURL}${FormatStringAsPhoneNumber(message.endpoint.split(" ").join(""))}&text=${message.content}";
     AndroidIntent intent = AndroidIntent(
         action: 'action_view',
         data: Uri.encodeFull(url),
@@ -137,35 +141,37 @@ class ScheduleProvider {
     print(intent.toString());
     print(url);
     await intent.launch();
-      try {
-        print('qweuiop');
-        final String result = await platform.invokeMethod('getBatteryLevel');
-        print('poiuytr');
-        print(result);
-        if(result=='done'){
-          message.status = MessageStatus.SENT;
-          message.attempts++;
-          print(message.status);
-          _ctrlMsg.sink.add(message);
-        }
-      } on PlatformException catch (e) {
-        print('exception');
-        print(e.message);
+    try {
+      print('qweuiop');
+      final String result = await platform.invokeMethod('getBatteryLevel');
+      print('poiuytr');
+      print(result);
+      if (result == 'done') {
+        message.status = MessageStatus.SENT;
+        message.attempts++;
+        print(message.status);
+        _ctrlMsg.sink.add(message);
       }
+    } on PlatformException catch (e) {
+      print('exception');
+      print(e.message);
+    }
   }
 
   void _processEmail(Message message1) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String username = '';
-    String password = '';
-    if(prefs.containsKey('mailid')){
-      username = prefs.getString('mailid');
-      password = prefs.getString('mailpassword');
+    String username = message1.mailId;
+    String password = message1.mailPassword;
+    String host = message1.mailHost;
+    var smtpServer = gmail(username, password);
+    if (message1.mailHost == 'Yahoo') {
+      smtpServer = yahoo(username, password);
+    } else if (message1.mailHost == 'Hotmail') {
+      smtpServer = hotmail(username, password);
     }
-  print('the recipient');
+    print('the recipient');
     print(username);
     print(password);
-    final smtpServer = gmail(username, password);
 
     final message = mailer.Message()
       ..from = mailer.Address(username, username)
@@ -261,7 +267,6 @@ class ScheduleProvider {
                         message.attempts < settings.message.maxAttempts))) &&
             DateTime.now().millisecondsSinceEpoch >= message.executedAt)
         .forEach((Message message) {
-
       switch (message.driver) {
         case MessageDriver.SMS:
           _processSms(message);
@@ -277,9 +282,9 @@ class ScheduleProvider {
         case MessageDriver.Whatsapp:
           print('islocked');
           print(isLocked);
-          if(!isLocked)
+          if (!isLocked)
             _processWhatsAppMessage(message);
-          else{
+          else {
             _triggershowNotificationWithDefaultSound(message);
           }
       }
@@ -287,7 +292,4 @@ class ScheduleProvider {
 
     if (messages.length > 0) _ctrlMsgs.sink.add(messages);
   }
-
-
-
 }

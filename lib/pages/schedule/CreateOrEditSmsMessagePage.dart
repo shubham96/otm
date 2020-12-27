@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -11,13 +10,8 @@ import 'package:msgschedule_2/models/Settings.dart';
 import 'package:msgschedule_2/providers/DateTimeFormator.dart';
 import 'package:msgschedule_2/providers/DialogProvider.dart';
 import 'package:msgschedule_2/providers/SettingsProvider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-
-enum MessageMode {
-  create,
-  edit
-}
+enum MessageMode { create, edit }
 
 class CreateOrEditSmsMessagePage extends StatefulWidget {
   final MessageMode messageMode;
@@ -28,13 +22,14 @@ class CreateOrEditSmsMessagePage extends StatefulWidget {
   const CreateOrEditSmsMessagePage(this.messageMode, [this.message]);
 
   @override
-  _CreateOrEditSmsMessagePageState createState() => _CreateOrEditSmsMessagePageState();
+  _CreateOrEditSmsMessagePageState createState() =>
+      _CreateOrEditSmsMessagePageState();
 }
 
-class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage> {
-
+class _CreateOrEditSmsMessagePageState
+    extends State<CreateOrEditSmsMessagePage> {
   final _contactPicker = ContactPicker();
-  final _messagesBloc = MessageBloc() ;
+  final _messagesBloc = MessageBloc();
   Settings _settings = SettingsProvider.getDefaultSettings();
   DateTime _date;
   TimeOfDay _time;
@@ -46,8 +41,13 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
   final _messageCtrl = TextEditingController();
 
   final _mailSubjectCtrl = TextEditingController();
-  final _gmailMailId = TextEditingController();
-  final _gmailMailPassword = TextEditingController();
+  // final _gmailMailId = TextEditingController(); //endpoint/receiver mail id
+
+  final _gmailSenderMailHost = TextEditingController();
+  final _gmailSenderMailId = TextEditingController();
+  final _gmailSenderMailPassword = TextEditingController();
+
+  var _currencies = ['Gmail', 'Yahoo', 'Hotmail'];
 
   MessageDriver _driverCtrl = MessageDriver.SMS;
 
@@ -56,28 +56,38 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
   String _timeError;
   String _messageError;
 
+  String _gmailSenderMailIdError;
+  String _gmailSenderMailPasswordError;
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
 
     if (widget.messageMode == MessageMode.edit) {
-      if(widget.message.driver == MessageDriver.Email)
+      if (widget.message.driver == MessageDriver.Email) {
         _emailCtrl.text = widget.message.endpoint;
-      else
+        _gmailSenderMailHost.text = widget.message.mailHost;
+        _gmailSenderMailId.text = widget.message.mailId;
+        _gmailSenderMailPassword.text = widget.message.mailPassword;
+      } else
         _phoneNumberCtrl.text = widget.message.endpoint;
 
-      _dateCtrl.text = DateTimeFormator.formatDate(DateTime.fromMillisecondsSinceEpoch(widget.message.executedAt));
-      _timeCtrl.text = DateTimeFormator.formatTime(TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(widget.message.executedAt)));
+      _dateCtrl.text = DateTimeFormator.formatDate(
+          DateTime.fromMillisecondsSinceEpoch(widget.message.executedAt));
+      _timeCtrl.text = DateTimeFormator.formatTime(TimeOfDay.fromDateTime(
+          DateTime.fromMillisecondsSinceEpoch(widget.message.executedAt)));
       _messageCtrl.text = widget.message.content;
       _mailSubjectCtrl.text = widget.message.subject;
 
       _date = DateTime.fromMillisecondsSinceEpoch(widget.message.executedAt);
-      _time = TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(widget.message.executedAt));
-    }
-    else {
+      _time = TimeOfDay.fromDateTime(
+          DateTime.fromMillisecondsSinceEpoch(widget.message.executedAt));
+    } else {
       _phoneNumberCtrl.text = '';
       _emailCtrl.text = '';
+      _gmailSenderMailHost.text = 'Gmail';
+      _gmailSenderMailId.text = '';
+      _gmailSenderMailPassword.text = '';
       _dateCtrl.text = '';
       _timeCtrl.text = '';
       _messageCtrl.text = '';
@@ -89,21 +99,18 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
     _timeCtrl.addListener(_validate);
     _phoneNumberCtrl.addListener(_validate);
     _emailCtrl.addListener(_validate);
+    _gmailSenderMailId.addListener(_validate);
+    _gmailSenderMailPassword.addListener(_validate);
 
     _loadSettings();
     _validate();
   }
 
   void _loadSettings() async {
-    final Settings settings = await SettingsProvider.getInstance().getSettings();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    print(prefs.containsKey('mailid'));
-    setState( () => _settings = settings );
-    if(prefs.containsKey('mailid')){
-      _gmailMailId.text = prefs.getString('mailid');
-      _gmailMailPassword.text = prefs.getString('mailpassword');
-    }
+    final Settings settings =
+        await SettingsProvider.getInstance().getSettings();
 
+    setState(() => _settings = settings);
   }
 
   @override
@@ -116,243 +123,224 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text((widget.messageMode == MessageMode.edit ? 'Edit' : 'Create New') + ' Message'),
+        title: Text(
+            (widget.messageMode == MessageMode.edit ? 'Edit' : 'Create New') +
+                ' Message'),
       ),
-
       body: Padding(
-        padding: EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
-        child: ListView(
-          children: <Widget>[
-
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text('Scheduling message for: ${getSchedulingFor()}'),
-                IconButton(
-                  icon: Icon(FontAwesomeIcons.sms, color: _driverCtrl == MessageDriver.SMS ? Colors.blue: Colors.grey),
-                  tooltip: 'SMS',
-                  onPressed: () {
-                    setState(() {
-                      _driverCtrl = MessageDriver.SMS;
-                      _validate();
-
-                    });
-                  },
-                ),
-                IconButton(
-                  icon: Icon(FontAwesomeIcons.whatsapp, color: _driverCtrl == MessageDriver.Whatsapp ? Colors.blue: Colors.grey),
-                  tooltip: 'Whatsapp',
-                  onPressed: () {
-                    setState(() {
-                      _driverCtrl = MessageDriver.Whatsapp;
-                      _validate();
-
-                    });
-                  },
-                ),
-                IconButton(
-                  icon: Icon(FontAwesomeIcons.envelope, color: _driverCtrl == MessageDriver.Email ? Colors.blue: Colors.grey),
-                  tooltip: 'Email',
-                  onPressed: () {
-                    setState(() {
-                      _driverCtrl = MessageDriver.Email;
-                      _validate();
-
-                    });
-                  },
-                ),
-              ],
-            ),
-            _driverCtrl == MessageDriver.Email ?
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text('Using Sender Mail ID: ${_gmailMailId.text}'),
-                IconButton(
-                  icon: Icon(Icons.edit),
-                  tooltip: 'Change',
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => new AlertDialog(
-                        title: new Text('Add GMAIL Mail ID'),
-                        content: Column(
-                          children: <Widget>[
-                            TextField(
-                              controller: _gmailMailId,
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.account_circle),
-                                labelText: 'Gmail Email ID',
-                              ),
-                            ),
-                            TextField(
-                              obscureText: true,
-                              controller: _gmailMailPassword,
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.lock),
-                                labelText: 'Password',
-                              ),
-                            ),
-                          ],
-                        ),
-                        actions: [
-                          RaisedButton(
-                              child: Text("Submit"),
-                              onPressed: () async {
-                                print(_gmailMailId.text);
-                                print(_gmailMailPassword.text);
-                                SharedPreferences prefs = await SharedPreferences.getInstance();
-                                prefs.setString('mailid', _gmailMailId.text);
-                                prefs.setString('mailpassword', _gmailMailPassword.text);
-                                setState(() {
-                                  _gmailMailId.text = _gmailMailId.text;
-                                  _gmailMailPassword.text = _gmailMailPassword.text;
-                                });
-                                // _gmailMailId.text = '';
-                                // _gmailMailPassword.text = '';
-                                Navigator.pop(context);
-                              })
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ]
-            )
-            :
-            Text(''),
-            _driverCtrl == MessageDriver.Email ?
-            TextFormField(
-              controller: _emailCtrl,
-              // inputFormatters: [
-              //   WhitelistingTextInputFormatter(RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")) // don't allow any input
-              // ],
-              maxLength: null,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                hintText: 'Email ID',
-                labelText: 'Email ID',
-                errorText: _phoneNumberError,
-                icon: Icon(Icons.contact_phone),
+          padding: EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
+          child: ListView(
+            children: <Widget>[
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text('Scheduling message for: ${getSchedulingFor()}'),
+                  IconButton(
+                    icon: Icon(FontAwesomeIcons.sms,
+                        color: _driverCtrl == MessageDriver.SMS
+                            ? Colors.blue
+                            : Colors.grey),
+                    tooltip: 'SMS',
+                    onPressed: () {
+                      setState(() {
+                        _driverCtrl = MessageDriver.SMS;
+                        _validate();
+                      });
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(FontAwesomeIcons.whatsapp,
+                        color: _driverCtrl == MessageDriver.Whatsapp
+                            ? Colors.blue
+                            : Colors.grey),
+                    tooltip: 'Whatsapp',
+                    onPressed: () {
+                      setState(() {
+                        _driverCtrl = MessageDriver.Whatsapp;
+                        _validate();
+                      });
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(FontAwesomeIcons.envelope,
+                        color: _driverCtrl == MessageDriver.Email
+                            ? Colors.blue
+                            : Colors.grey),
+                    tooltip: 'Email',
+                    onPressed: () {
+                      setState(() {
+                        _driverCtrl = MessageDriver.Email;
+                        _validate();
+                      });
+                    },
+                  ),
+                ],
               ),
-            )
-            :
-            TextFormField(
-              controller: _phoneNumberCtrl,
-              inputFormatters: [
-                WhitelistingTextInputFormatter(RegExp(r"^[+]?\d*$")) // don't allow any input
-              ],
-              maxLength: 15,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                  hintText: 'Phone Number',
-                  labelText: 'Phone Number',
-                  errorText: _phoneNumberError,
-                  icon: Icon(Icons.contact_phone),
-                  suffixIcon: GestureDetector(
-                      onTap: () async {
-                        final Contact contact = await _contactPicker.selectContact();
-                        // String number
-                        setState(() => _phoneNumberCtrl.text = contact.phoneNumber.number.toString());
+              _driverCtrl == MessageDriver.Email
+                  ? DropdownButton<String>(
+                      value: _gmailSenderMailHost.text,
+                      onChanged: (String newValue) {
+                        setState(() {
+                          _gmailSenderMailHost.text = newValue;
+                        });
                       },
-                      child: Icon(Icons.person_add)
-                  )
+                      items: _currencies.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    )
+                  : Text(''),
+              _driverCtrl == MessageDriver.Email
+                  ? TextFormField(
+                      controller: _gmailSenderMailId,
+                      maxLength: null,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: 'From Email ID',
+                        labelText: 'From Email ID',
+                        icon: Icon(Icons.mail),
+                      ),
+                    )
+                  : Text(''),
+              _driverCtrl == MessageDriver.Email
+                  ? TextFormField(
+                      controller: _gmailSenderMailPassword,
+                      maxLength: null,
+                      keyboardType: TextInputType.visiblePassword,
+                      decoration: InputDecoration(
+                        hintText: 'From Email ID Password',
+                        labelText: 'From Email Password',
+                        icon: Icon(Icons.mail),
+                      ),
+                    )
+                  : Text(''),
+              _driverCtrl == MessageDriver.Email
+                  ? TextFormField(
+                      controller: _emailCtrl,
+                      maxLength: null,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: 'To Email ID',
+                        labelText: 'To Email ID',
+                        errorText: _phoneNumberError,
+                        icon: Icon(Icons.contact_phone),
+                      ),
+                    )
+                  : TextFormField(
+                      controller: _phoneNumberCtrl,
+                      inputFormatters: [
+                        WhitelistingTextInputFormatter(
+                            RegExp(r"^[+]?\d*$")) // don't allow any input
+                      ],
+                      maxLength: 15,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                          hintText: 'Phone Number',
+                          labelText: 'Phone Number',
+                          errorText: _phoneNumberError,
+                          icon: Icon(Icons.contact_phone),
+                          suffixIcon: GestureDetector(
+                              onTap: () async {
+                                final Contact contact =
+                                    await _contactPicker.selectContact();
+                                // String number
+                                setState(() => _phoneNumberCtrl.text =
+                                    contact.phoneNumber.number.toString());
+                              },
+                              child: Icon(Icons.person_add))),
+                    ),
+              _driverCtrl == MessageDriver.Email
+                  ? TextFormField(
+                      controller: _mailSubjectCtrl,
+                      maxLines: null,
+                      maxLength: null,
+                      keyboardType: TextInputType.multiline,
+                      decoration: InputDecoration(
+                          labelText: 'Subject', icon: Icon(Icons.textsms)),
+                    )
+                  : Text(''),
+              TextFormField(
+                controller: _messageCtrl,
+                maxLines: null,
+                maxLength: _settings.sms.maxSmsCount * SmsSettings.maxSmsLength,
+                keyboardType: TextInputType.multiline,
+                decoration: InputDecoration(
+                    errorText: _messageError,
+                    labelText: 'Message',
+                    icon: Icon(Icons.textsms)),
               ),
-            ),
-            _driverCtrl == MessageDriver.Email ? TextFormField(
-              controller: _mailSubjectCtrl,
-              maxLines: null,
-              maxLength: null,
-              keyboardType: TextInputType.multiline,
-              decoration: InputDecoration(
-                  labelText: 'Subject',
-                  icon: Icon(Icons.textsms)
+              TextFormField(
+                controller: _dateCtrl,
+                inputFormatters: [
+                  BlacklistingTextInputFormatter(
+                      RegExp(r".*")) // don't allow any input
+                ],
+                keyboardType: TextInputType.datetime,
+                decoration: InputDecoration(
+                    labelText: 'Date',
+                    errorText: _dateError,
+                    icon: Icon(Icons.calendar_today),
+                    suffixIcon: GestureDetector(
+                      child: Icon(Icons.more_horiz),
+                      onTap: () async {
+                        final DateTime date = await showDatePicker(
+                            context: context,
+                            firstDate: DateTime.now(),
+                            lastDate:
+                                DateTime.now().add(Duration(days: 30 * 12 * 2)),
+                            initialDate: DateTime.now());
+                        _date = date;
+                        setState(() {
+                          _dateCtrl.text = DateTimeFormator.formatDate(date);
+                        });
+                      },
+                    )),
               ),
-            )
-            :
-            Text(''),
-            TextFormField(
-              controller: _messageCtrl,
-              maxLines: null,
-              maxLength: _settings.sms.maxSmsCount * SmsSettings.maxSmsLength,
-              keyboardType: TextInputType.multiline,
-              decoration: InputDecoration(
-                errorText: _messageError,
-                labelText: 'Message',
-                icon: Icon(Icons.textsms)
+              TextFormField(
+                controller: _timeCtrl,
+                inputFormatters: [
+                  BlacklistingTextInputFormatter(RegExp(r".*"))
+                ],
+                keyboardType: TextInputType.datetime,
+                decoration: InputDecoration(
+                    labelText: 'Time',
+                    errorText: _timeError,
+                    icon: Icon(Icons.access_time),
+                    suffixIcon: GestureDetector(
+                      child: Icon(Icons.more_horiz),
+                      onTap: () async {
+                        final TimeOfDay time = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.fromDateTime(
+                                DateTime.now().add(Duration(minutes: 2))));
+                        _time = time;
+                        setState(() {
+                          _timeCtrl.text = _time.format(context);
+                        });
+                      },
+                    )),
               ),
-            ),
-            
-            TextFormField(
-              controller: _dateCtrl,
-              inputFormatters: [
-                BlacklistingTextInputFormatter(RegExp(r".*")) // don't allow any input
-              ],
-              keyboardType: TextInputType.datetime,
-              decoration: InputDecoration(
-                labelText: 'Date',
-                errorText: _dateError,
-                icon: Icon(Icons.calendar_today),
-                suffixIcon: GestureDetector(
-                  child: Icon(Icons.more_horiz),
-                  onTap: () async {
-                    final DateTime date = await showDatePicker(
-                      context: context,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(Duration(days: 30 * 12* 2)),
-                      initialDate: DateTime.now()
-                    );
-                    _date = date;
-                    setState(() {
-                      _dateCtrl.text = DateTimeFormator.formatDate(date);
-                    });
-                  },
-                )
-              ),
-            ),
-
-            TextFormField(
-              controller: _timeCtrl,
-              inputFormatters: [
-                BlacklistingTextInputFormatter(RegExp(r".*"))
-              ],
-              keyboardType: TextInputType.datetime,
-              decoration: InputDecoration(
-                labelText: 'Time',
-                errorText: _timeError,
-                icon: Icon(Icons.access_time),
-                suffixIcon: GestureDetector(
-                  child: Icon(Icons.more_horiz),
-                  onTap: () async {
-                    final TimeOfDay time = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.fromDateTime(DateTime.now().add(Duration(minutes: 2)))
-                    );
-                    _time = time;
-                    setState(() {
-                      _timeCtrl.text = _time.format(context);
-                    });
-                  },
-                )
-              ),
-            ),
-
-          ],
-        )
-      ),
-
+            ],
+          )),
       floatingActionButton: FloatingActionButton(
         child: Icon(
-          widget.messageMode == MessageMode.create ? Icons.create : Icons.edit,
-          color: Colors.white
-        ),
-        onPressed: !_validate() ? null : () => widget.messageMode == MessageMode.edit ? _onEditMessage() : _onCreateMessage(),
+            widget.messageMode == MessageMode.create
+                ? Icons.create
+                : Icons.edit,
+            color: Colors.white),
+        onPressed: !_validate()
+            ? null
+            : () => widget.messageMode == MessageMode.edit
+                ? _onEditMessage()
+                : _onCreateMessage(),
         backgroundColor: _validate() ? Colors.deepOrange : Colors.grey,
       ),
     );
   }
 
-  getSchedulingFor(){
+  getSchedulingFor() {
     switch (_driverCtrl) {
       case MessageDriver.SMS:
         return 'SMS';
@@ -373,6 +361,8 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
     _phoneNumberError = null;
     _dateError = null;
     _timeError = null;
+    _gmailSenderMailIdError = null;
+    _gmailSenderMailPasswordError = null;
 
     if (_messageCtrl.text.trim().isEmpty) {
       status = false;
@@ -389,7 +379,7 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
       _timeError = 'Select a time.';
     }
 
-    if(_driverCtrl==MessageDriver.Email){
+    if (_driverCtrl == MessageDriver.Email) {
       Pattern pattern =
           r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]"
           r"{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]"
@@ -401,17 +391,38 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
         setState(() {
           _phoneNumberError = 'Enter the Email ID.';
         });
-      }else if(!regex.hasMatch(_emailCtrl.text)){
+      } else if (!regex.hasMatch(_emailCtrl.text)) {
         status = false;
         setState(() {
           _phoneNumberError = 'Enter valid Email ID.';
         });
-      }else{
+      } else {
         setState(() {
           _phoneNumberError = '';
         });
       }
-    }else{
+
+      if (_gmailSenderMailId.text.isEmpty) {
+        status = false;
+        setState(() {
+          _gmailSenderMailIdError = 'Enter the Email ID.';
+        });
+      } else if (!regex.hasMatch(_gmailSenderMailId.text)) {
+        status = false;
+        setState(() {
+          _gmailSenderMailIdError = 'Enter valid Email ID.';
+        });
+      } else {
+        setState(() {
+          _gmailSenderMailIdError = '';
+        });
+      }
+
+      if (_gmailSenderMailPassword.text.isEmpty) {
+        status = false;
+        _gmailSenderMailPasswordError = 'Enter the mail password.';
+      }
+    } else {
       if (_phoneNumberCtrl.text.isEmpty) {
         status = false;
         _phoneNumberError = 'Enter a phone number.';
@@ -422,50 +433,50 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
   }
 
   /// Creates a message based on the form (user input).
-  Message _getFinalMessage() =>
-      _driverCtrl == MessageDriver.Email ?
-    Message(
-      id: widget?.message?.id,
-      content: _messageCtrl.text,
-      subject: _mailSubjectCtrl.text,
-      createdAt: widget?.message?.createdAt ?? DateTime.now().millisecondsSinceEpoch,
-      attempts: widget?.message?.attempts ?? 0,
-      endpoint: _emailCtrl.text,
-      driver: _driverCtrl,
-      status: widget?.message?.status ?? MessageStatus.PENDING,
-      isArchived: widget?.message?.isArchived ?? false,
-      executedAt: DateTime(
-        _date.year, _date.month, _date.day,
-        _time.hour, _time.minute
-      ).millisecondsSinceEpoch
-    ) :
-      Message(
+  Message _getFinalMessage() => _driverCtrl == MessageDriver.Email
+      ? Message(
+          id: widget?.message?.id,
+          content: _messageCtrl.text,
+          subject: _mailSubjectCtrl.text,
+          mailHost: _gmailSenderMailHost.text,
+          mailId: _gmailSenderMailId.text,
+          mailPassword: _gmailSenderMailPassword.text,
+          createdAt: widget?.message?.createdAt ??
+              DateTime.now().millisecondsSinceEpoch,
+          attempts: widget?.message?.attempts ?? 0,
+          endpoint: _emailCtrl.text,
+          driver: _driverCtrl,
+          status: widget?.message?.status ?? MessageStatus.PENDING,
+          isArchived: widget?.message?.isArchived ?? false,
+          executedAt: DateTime(
+                  _date.year, _date.month, _date.day, _time.hour, _time.minute)
+              .millisecondsSinceEpoch)
+      : Message(
           id: widget?.message?.id,
           content: _messageCtrl.text,
           subject: '',
-          createdAt: widget?.message?.createdAt ?? DateTime.now().millisecondsSinceEpoch,
+          mailHost: '',
+          mailId: '',
+          mailPassword: '',
+          createdAt: widget?.message?.createdAt ??
+              DateTime.now().millisecondsSinceEpoch,
           attempts: widget?.message?.attempts ?? 0,
           endpoint: _phoneNumberCtrl.text,
           driver: _driverCtrl,
           status: widget?.message?.status ?? MessageStatus.PENDING,
           isArchived: widget?.message?.isArchived ?? false,
           executedAt: DateTime(
-              _date.year, _date.month, _date.day,
-              _time.hour, _time.minute
-          ).millisecondsSinceEpoch
-      )
-  ;
+                  _date.year, _date.month, _date.day, _time.hour, _time.minute)
+              .millisecondsSinceEpoch);
 
   void _onEditMessage() async {
     if (await _messagesBloc.updateMessage(_getFinalMessage())) {
       Navigator.pop(context);
-    }
-    else {
+    } else {
       await DialogProvider.showMessage(
-        context: context,
-        title: Icon(Icons.error),
-        content: Text('Error updating message.')
-      );
+          context: context,
+          title: Icon(Icons.error),
+          content: Text('Error updating message.'));
     }
   }
 
@@ -473,13 +484,95 @@ class _CreateOrEditSmsMessagePageState extends State<CreateOrEditSmsMessagePage>
     print(_mailSubjectCtrl.text);
     if (await _messagesBloc.addMessage(_getFinalMessage())) {
       Navigator.pop(context);
-    }
-    else {
+    } else {
       await DialogProvider.showMessage(
-        context: context,
-        title: Icon(Icons.error),
-        content: Text('Error creating message.')
-      );
+          context: context,
+          title: Icon(Icons.error),
+          content: Text('Error creating message.'));
     }
+  }
+}
+
+class RemindersPage extends StatefulWidget {
+  @override
+  _RemindersPageState createState() => _RemindersPageState();
+}
+
+class _RemindersPageState extends State<RemindersPage> {
+  final _gmailMailId = TextEditingController();
+  final _gmailMailPassword = TextEditingController();
+  String _currentSelectedValue = 'Gmail';
+  var _currencies = ['Gmail', 'Yahoo', 'Hotmail'];
+  void _loadEmails() async {
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // if (prefs.containsKey('mailid')) {
+    //   _gmailMailId.text = prefs.getString('mailid');
+    //   _gmailMailPassword.text = prefs.getString('mailpassword');
+    // }
+  }
+
+  @override
+  void initState() {
+    _loadEmails();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return new AlertDialog(
+      title: new Text('Add Mail ID'),
+      content: Column(
+        children: <Widget>[
+          DropdownButton<String>(
+            value: _currentSelectedValue,
+            onChanged: (String newValue) {
+              setState(() {
+                _currentSelectedValue = newValue;
+              });
+            },
+            items: _currencies.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+          ),
+          TextField(
+            controller: _gmailMailId,
+            decoration: InputDecoration(
+              icon: Icon(Icons.account_circle),
+              labelText: 'Email ID',
+            ),
+          ),
+          TextField(
+            obscureText: true,
+            controller: _gmailMailPassword,
+            decoration: InputDecoration(
+              icon: Icon(Icons.lock),
+              labelText: 'Password',
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        RaisedButton(
+            child: Text("Submit"),
+            onPressed: () async {
+              print(_gmailMailId.text);
+              print(_gmailMailPassword.text);
+              // SharedPreferences prefs = await SharedPreferences.getInstance();
+              // prefs.setString('mailid', _gmailMailId.text);
+              // prefs.setString('mailpassword', _gmailMailPassword.text);
+              setState(() {
+                _gmailMailId.text = _gmailMailId.text;
+                _gmailMailPassword.text = _gmailMailPassword.text;
+              });
+              // _gmailMailId.text = '';
+              // _gmailMailPassword.text = '';
+              Navigator.pop(context);
+            })
+      ],
+    );
+    throw UnimplementedError();
   }
 }
