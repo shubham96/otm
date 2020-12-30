@@ -335,7 +335,7 @@ class _CreateOrEditSmsMessagePageState
             : () => widget.messageMode == MessageMode.edit
                 ? _onEditMessage()
                 : _onCreateMessage(),
-        backgroundColor: _validate() ? Colors.deepOrange : Colors.grey,
+        backgroundColor: _validate() ? Colors.blueGrey : Colors.grey,
       ),
     );
   }

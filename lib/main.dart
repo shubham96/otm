@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:msgschedule_2/providers/MessageProvider.dart';
 import 'pages/schedule/SchedulePage.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 Future main() async {
   await WidgetsFlutterBinding.ensureInitialized();
 
@@ -59,24 +60,22 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: _appName,
       theme: ThemeData(
-        primarySwatch: Colors.brown,
-        accentColor: Colors.orange,
+        primarySwatch: Colors.blueGrey,
+        accentColor: Colors.black,
       ),
       home: _home,
     );
   }
 
-
   Future _showNotificationWithDefaultSound() async {
     var android = new AndroidNotificationDetails(
         'channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
-        priority: Priority.High,importance: Importance.Max
-    );
+        priority: Priority.High, importance: Importance.Max);
     var iOS = new IOSNotificationDetails();
-    var platformChannelSpecifics = new NotificationDetails(
-        android, iOS);
+    var platformChannelSpecifics = new NotificationDetails(android, iOS);
     await flutterLocalNotificationsPlugin.show(
       0,
       'New Post',
