@@ -10,6 +10,7 @@ import 'package:msgschedule_2/models/Settings.dart';
 import 'package:msgschedule_2/providers/DateTimeFormator.dart';
 import 'package:msgschedule_2/providers/DialogProvider.dart';
 import 'package:msgschedule_2/providers/SettingsProvider.dart';
+import 'package:msgschedule_2/SizeConfig.dart';
 
 enum MessageMode { create, edit }
 
@@ -121,11 +122,14 @@ class _CreateOrEditSmsMessagePageState
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            (widget.messageMode == MessageMode.edit ? 'Edit' : 'Create New') +
-                ' Message'),
+          (widget.messageMode == MessageMode.edit ? 'Edit' : 'Create New') +
+              ' Message',
+          style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal * 3),
+        ),
       ),
       body: Padding(
           padding: EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
@@ -134,11 +138,16 @@ class _CreateOrEditSmsMessagePageState
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text('Scheduling message for: ${getSchedulingFor()}'),
+                  Text(
+                    'Scheduling message for: ${getSchedulingFor()}',
+                    style: TextStyle(
+                        fontSize: SizeConfig.safeBlockHorizontal * 2.5),
+                  ),
                   IconButton(
                     icon: Icon(FontAwesomeIcons.sms,
+                        size: SizeConfig.safeBlockHorizontal * 7.5,
                         color: _driverCtrl == MessageDriver.SMS
-                            ? Colors.blue
+                            ? Colors.black
                             : Colors.grey),
                     tooltip: 'SMS',
                     onPressed: () {
@@ -150,8 +159,9 @@ class _CreateOrEditSmsMessagePageState
                   ),
                   IconButton(
                     icon: Icon(FontAwesomeIcons.whatsapp,
+                        size: SizeConfig.safeBlockHorizontal * 7.5,
                         color: _driverCtrl == MessageDriver.Whatsapp
-                            ? Colors.blue
+                            ? Colors.black
                             : Colors.grey),
                     tooltip: 'Whatsapp',
                     onPressed: () {
@@ -163,8 +173,9 @@ class _CreateOrEditSmsMessagePageState
                   ),
                   IconButton(
                     icon: Icon(FontAwesomeIcons.envelope,
+                        size: SizeConfig.safeBlockHorizontal * 7.5,
                         color: _driverCtrl == MessageDriver.Email
-                            ? Colors.blue
+                            ? Colors.black
                             : Colors.grey),
                     tooltip: 'Email',
                     onPressed: () {
@@ -199,8 +210,15 @@ class _CreateOrEditSmsMessagePageState
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: 'From Email ID',
+                        hintStyle: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
                         labelText: 'From Email ID',
-                        icon: Icon(Icons.mail),
+                        labelStyle: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                        icon: Icon(
+                          Icons.mail,
+                          size: SizeConfig.safeBlockHorizontal * 8,
+                        ),
                       ),
                     )
                   : Text(''),
@@ -210,9 +228,13 @@ class _CreateOrEditSmsMessagePageState
                       maxLength: null,
                       keyboardType: TextInputType.visiblePassword,
                       decoration: InputDecoration(
-                        hintText: 'From Email ID Password',
+                        hintStyle: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                        labelStyle: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
                         labelText: 'From Email Password',
                         icon: Icon(Icons.mail),
+                        hintText: 'From Email ID Password',
                       ),
                     )
                   : Text(''),
@@ -222,6 +244,10 @@ class _CreateOrEditSmsMessagePageState
                       maxLength: null,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
+                        hintStyle: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                        labelStyle: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
                         hintText: 'To Email ID',
                         labelText: 'To Email ID',
                         errorText: _phoneNumberError,
@@ -238,8 +264,12 @@ class _CreateOrEditSmsMessagePageState
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                           hintText: 'Phone Number',
+                          hintStyle: TextStyle(
+                              fontSize: SizeConfig.safeBlockHorizontal * 3.5),
                           labelText: 'Phone Number',
-                          errorText: _phoneNumberError,
+                          labelStyle: TextStyle(
+                              fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                          // errorText: _phoneNumberError,
                           icon: Icon(Icons.contact_phone),
                           suffixIcon: GestureDetector(
                               onTap: () async {
@@ -258,69 +288,178 @@ class _CreateOrEditSmsMessagePageState
                       maxLength: null,
                       keyboardType: TextInputType.multiline,
                       decoration: InputDecoration(
-                          labelText: 'Subject', icon: Icon(Icons.textsms)),
+                          hintStyle: TextStyle(
+                              fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                          labelStyle: TextStyle(
+                              fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                          labelText: 'Subject',
+                          icon: Icon(Icons.textsms)),
                     )
                   : Text(''),
+
+              // TextFormField(
+              //   controller: _dateCtrl,
+              //   inputFormatters: [
+              //     BlacklistingTextInputFormatter(
+              //         RegExp(r".*")) // don't allow any input
+              //   ],
+              //   keyboardType: TextInputType.datetime,
+              //   decoration: InputDecoration(
+              //       labelText: 'Date',
+              //       labelStyle: TextStyle(
+              //           fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+              //       errorText: _dateError,
+              //       icon: Icon(Icons.calendar_today),
+              //       suffixIcon: GestureDetector(
+              //         child: Icon(Icons.more_horiz),
+              //         onTap: () async {
+              //           final DateTime date = await showDatePicker(
+              //               context: context,
+              //               firstDate: DateTime.now(),
+              //               lastDate:
+              //                   DateTime.now().add(Duration(days: 30 * 12 * 2)),
+              //               initialDate: DateTime.now());
+              //           _date = date;
+              //           setState(() {
+              //             _dateCtrl.text = DateTimeFormator.formatDate(date);
+              //           });
+              //         },
+              //       )),
+              // ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                child: GestureDetector(
+                  onTap: () async {
+                    final DateTime date = await showDatePicker(
+                        context: context,
+                        firstDate: DateTime.now(),
+                        lastDate:
+                            DateTime.now().add(Duration(days: 30 * 12 * 2)),
+                        initialDate: DateTime.now());
+                    _date = date;
+                    setState(() {
+                      _dateCtrl.text = DateTimeFormator.formatDate(date);
+                    });
+                    print(_dateCtrl.text);
+                  },
+                  child: Container(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              color: Colors.white,
+                              size: SizeConfig.safeBlockHorizontal * 4,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text(
+                              "Select Date",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: SizeConfig.safeBlockHorizontal * 3),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    decoration: BoxDecoration(
+                        color: Colors.blueGrey,
+                        borderRadius: BorderRadius.circular(10)),
+                    width: double.infinity,
+                  ),
+                ),
+              ),
+              // TextFormField(
+              //   controller: _timeCtrl,
+              //   inputFormatters: [
+              //     BlacklistingTextInputFormatter(RegExp(r".*"))
+              //   ],
+              //   keyboardType: TextInputType.datetime,
+              //   decoration: InputDecoration(
+              //       labelText: 'Time',
+              //       errorText: _timeError,
+              //
+              //       labelStyle: TextStyle(
+              //           fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+              //       icon: Icon(Icons.access_time),
+              //       suffixIcon: GestureDetector(
+              //         child: Icon(Icons.more_horiz),
+              //         onTap: () async {
+              //           final TimeOfDay time = await showTimePicker(
+              //               context: context,
+              //               initialTime: TimeOfDay.fromDateTime(
+              //                   DateTime.now().add(Duration(minutes: 2))));
+              //           _time = time;
+              //           setState(() {
+              //             _timeCtrl.text = _time.format(context);
+              //           });
+              //         },
+              //       )),
+              // ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                child: GestureDetector(
+                  onTap: () async {
+                    final TimeOfDay time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.fromDateTime(
+                            DateTime.now().add(Duration(minutes: 2))));
+                    _time = time;
+                    setState(() {
+                      _timeCtrl.text = _time.format(context);
+                    });
+                    print(_timeCtrl.text.toString());
+                  },
+                  child: Container(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              color: Colors.white,
+                              size: SizeConfig.safeBlockHorizontal * 4,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text(
+                              "Select Time",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: SizeConfig.safeBlockHorizontal * 3),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    decoration: BoxDecoration(
+                        color: Colors.blueGrey,
+                        borderRadius: BorderRadius.circular(10)),
+                    width: double.infinity,
+                  ),
+                ),
+              ),
               TextFormField(
                 controller: _messageCtrl,
                 maxLines: null,
-                maxLength: _settings.sms.maxSmsCount * SmsSettings.maxSmsLength,
+                // maxLength: _settings.sms.maxSmsCount * SmsSettings.maxSmsLength,
                 keyboardType: TextInputType.multiline,
                 decoration: InputDecoration(
-                    errorText: _messageError,
+                    // errorText: _messageError,
+                    labelStyle: TextStyle(
+                        fontSize: SizeConfig.safeBlockHorizontal * 3.5),
                     labelText: 'Message',
                     icon: Icon(Icons.textsms)),
-              ),
-              TextFormField(
-                controller: _dateCtrl,
-                inputFormatters: [
-                  BlacklistingTextInputFormatter(
-                      RegExp(r".*")) // don't allow any input
-                ],
-                keyboardType: TextInputType.datetime,
-                decoration: InputDecoration(
-                    labelText: 'Date',
-                    errorText: _dateError,
-                    icon: Icon(Icons.calendar_today),
-                    suffixIcon: GestureDetector(
-                      child: Icon(Icons.more_horiz),
-                      onTap: () async {
-                        final DateTime date = await showDatePicker(
-                            context: context,
-                            firstDate: DateTime.now(),
-                            lastDate:
-                                DateTime.now().add(Duration(days: 30 * 12 * 2)),
-                            initialDate: DateTime.now());
-                        _date = date;
-                        setState(() {
-                          _dateCtrl.text = DateTimeFormator.formatDate(date);
-                        });
-                      },
-                    )),
-              ),
-              TextFormField(
-                controller: _timeCtrl,
-                inputFormatters: [
-                  BlacklistingTextInputFormatter(RegExp(r".*"))
-                ],
-                keyboardType: TextInputType.datetime,
-                decoration: InputDecoration(
-                    labelText: 'Time',
-                    errorText: _timeError,
-                    icon: Icon(Icons.access_time),
-                    suffixIcon: GestureDetector(
-                      child: Icon(Icons.more_horiz),
-                      onTap: () async {
-                        final TimeOfDay time = await showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.fromDateTime(
-                                DateTime.now().add(Duration(minutes: 2))));
-                        _time = time;
-                        setState(() {
-                          _timeCtrl.text = _time.format(context);
-                        });
-                      },
-                    )),
               ),
             ],
           )),
@@ -540,9 +679,10 @@ class _RemindersPageState extends State<RemindersPage> {
           TextField(
             controller: _gmailMailId,
             decoration: InputDecoration(
-              icon: Icon(Icons.account_circle),
-              labelText: 'Email ID',
-            ),
+                icon: Icon(Icons.account_circle),
+                labelText: 'Email ID',
+                labelStyle:
+                    TextStyle(fontSize: SizeConfig.safeBlockHorizontal * 3)),
           ),
           TextField(
             obscureText: true,

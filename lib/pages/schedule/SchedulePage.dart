@@ -15,6 +15,8 @@ import './Schedule.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     hide Message;
 
+import 'package:msgschedule_2/SizeConfig.dart';
+
 class SchedulePage extends StatefulWidget {
   SchedulePage({Key key, this.title}) : super(key: key);
 
@@ -88,10 +90,13 @@ class _SchedulePageState extends State<SchedulePage>
   @override
   Widget build(BuildContext context) {
     debugPrint('SchedulePage.build()');
-
+    SizeConfig().init(context);
     return Scaffold(
       appBar: AppBar(
-          title: Text(widget.title),
+          title: Text(
+            widget.title,
+            style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal * 4),
+          ),
           //  backgroundColor: Colors.orange,
           actions: <Widget>[
             PopupMenuButton<PopUpMenuValues>(
@@ -134,7 +139,7 @@ class _SchedulePageState extends State<SchedulePage>
             )
           ],
           bottom: TabBar(
-            indicatorColor: Colors.blue,
+            indicatorColor: Colors.black,
             labelColor: Colors.black,
             unselectedLabelColor: Colors.white,
             controller: _tabController,
