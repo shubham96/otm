@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -46,6 +47,7 @@ class _CreateOrEditSmsMessagePageState
   final _gmailSenderMailHost = TextEditingController();
   final _gmailSenderMailId = TextEditingController();
   final _gmailSenderMailPassword = TextEditingController();
+  final _gmailSenderMailAttachment = TextEditingController();
 
   var _currencies = ['Gmail', 'Yahoo', 'Hotmail'];
 
@@ -58,7 +60,6 @@ class _CreateOrEditSmsMessagePageState
 
   String _gmailSenderMailIdError;
   String _gmailSenderMailPasswordError;
-
   @override
   void initState() {
     super.initState();
@@ -69,6 +70,7 @@ class _CreateOrEditSmsMessagePageState
         _gmailSenderMailHost.text = widget.message.mailHost;
         _gmailSenderMailId.text = widget.message.mailId;
         _gmailSenderMailPassword.text = widget.message.mailPassword;
+        _gmailSenderMailAttachment.text = widget.message.mailAttachment;
       } else
         _phoneNumberCtrl.text = widget.message.endpoint;
 
@@ -88,6 +90,7 @@ class _CreateOrEditSmsMessagePageState
       _gmailSenderMailHost.text = 'Gmail';
       _gmailSenderMailId.text = '';
       _gmailSenderMailPassword.text = '';
+      _gmailSenderMailAttachment.text = '';
       _dateCtrl.text = '';
       _timeCtrl.text = '';
       _messageCtrl.text = '';
@@ -117,6 +120,15 @@ class _CreateOrEditSmsMessagePageState
   void dispose() {
     super.dispose();
     _messagesBloc.dispose();
+  }
+
+  pickAttachment() async {
+    String result = await FilePicker.getFilePath();
+    print("result");
+    print(result);
+    setState(() {
+      _gmailSenderMailAttachment.text = result;
+    });
   }
 
   @override
@@ -322,6 +334,19 @@ class _CreateOrEditSmsMessagePageState
                       },
                     )),
               ),
+              _driverCtrl == MessageDriver.Email
+                  ? Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                      IconButton(
+                        icon: Icon(FontAwesomeIcons.file, color: Colors.grey),
+                        tooltip: 'Attachment',
+                        onPressed: () {
+                          pickAttachment();
+                        },
+                      ),
+                      Text(
+                          '${_gmailSenderMailAttachment.text == '' ? 'No attachment added' : 'Attachment added'}'),
+                    ])
+                  : Text(''),
             ],
           )),
       floatingActionButton: FloatingActionButton(
@@ -441,6 +466,7 @@ class _CreateOrEditSmsMessagePageState
           mailHost: _gmailSenderMailHost.text,
           mailId: _gmailSenderMailId.text,
           mailPassword: _gmailSenderMailPassword.text,
+          mailAttachment: _gmailSenderMailAttachment.text,
           createdAt: widget?.message?.createdAt ??
               DateTime.now().millisecondsSinceEpoch,
           attempts: widget?.message?.attempts ?? 0,
@@ -458,6 +484,7 @@ class _CreateOrEditSmsMessagePageState
           mailHost: '',
           mailId: '',
           mailPassword: '',
+          mailAttachment: '',
           createdAt: widget?.message?.createdAt ??
               DateTime.now().millisecondsSinceEpoch,
           attempts: widget?.message?.attempts ?? 0,
@@ -482,6 +509,7 @@ class _CreateOrEditSmsMessagePageState
 
   void _onCreateMessage() async {
     print(_mailSubjectCtrl.text);
+    // FilePickerResult result = await FilePicker.platform.pickFiles();
     if (await _messagesBloc.addMessage(_getFinalMessage())) {
       Navigator.pop(context);
     } else {

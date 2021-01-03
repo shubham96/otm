@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:android_intent/android_intent.dart';
 import 'package:flutter/services.dart';
+// import 'package:mailer/mailer.dart';
 import 'package:msgschedule_2/models/Message.dart';
 import 'package:msgschedule_2/models/Settings.dart';
 import 'package:msgschedule_2/providers/MessageProvider.dart';
@@ -172,14 +174,26 @@ class ScheduleProvider {
     print('the recipient');
     print(username);
     print(password);
-
-    final message = mailer.Message()
+    print(message1);
+    var message = mailer.Message()
       ..from = mailer.Address(username, username)
       ..recipients.add(message1.endpoint)
       // ..ccRecipients.addAll(['destCc1@example.com', 'destCc2@example.com'])
       // ..bccRecipients.add(mailer.Address('bccAddress@example.com'))
       ..subject = message1.subject
       ..text = message1.content;
+    if (message1.mailAttachment != '') {
+      File file = new File(message1.mailAttachment);
+      message = mailer.Message()
+        ..from = mailer.Address(username, username)
+        ..recipients.add(message1.endpoint)
+        ..attachments.add(mailer.FileAttachment(file))
+        // ..ccRecipients.addAll(['destCc1@example.com', 'destCc2@example.com'])
+        // ..bccRecipients.add(mailer.Address('bccAddress@example.com'))
+        ..subject = message1.subject
+        ..text = message1.content;
+    }
+
     print(mailer.Address(username));
     print(message1.endpoint);
     print(message1.subject);

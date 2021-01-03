@@ -66,6 +66,7 @@ class MessageProvider {
           mailHost TEXT,
           mailId TEXT,
           mailPassword TEXT,
+          mailAttachment TEXT,
           driver INTEGER,
           endpoint TEXT,
           createdAt INTEGER,
@@ -121,13 +122,14 @@ class MessageProvider {
 
     final int i = await _database.rawInsert(
         'INSERT INTO $_tblMessages '
-        'VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           message.content,
           message.subject,
           message.mailHost,
           message.mailId,
           message.mailPassword,
+          message.mailAttachment,
           message.driver.index,
           message.endpoint,
           message.createdAt,
@@ -152,6 +154,7 @@ class MessageProvider {
         'mailHost = ?, '
         'mailId = ?, '
         'mailPassword = ?, '
+        'mailAttachment = ?, '
         'driver = ?, '
         'endpoint = ?, '
         'createdAt = ?, '
@@ -166,6 +169,7 @@ class MessageProvider {
           message.mailHost,
           message.mailId,
           message.mailPassword,
+          message.mailAttachment,
           message.driver.index,
           message.endpoint,
           message.createdAt,
@@ -256,6 +260,7 @@ class MessageProvider {
     message.mailHost = '';
     message.mailId = '';
     message.mailPassword = '';
+    message.mailAttachment = '';
     message.createdAt = DateTime.now().millisecondsSinceEpoch;
     message.executedAt = DateTime.now().millisecondsSinceEpoch;
     message.endpoint = '409350345';

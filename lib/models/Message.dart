@@ -15,14 +15,17 @@ class Message {
   /// The message subject.
   String subject;
 
-  /// The message subject.
+  /// The message mailHost.
   String mailHost;
 
-  /// The message subject.
+  /// The message mailId.
   String mailId;
 
-  /// The message subject.
+  /// The message mailPassword.
   String mailPassword;
+
+  /// The message mailAttachment.
+  String mailAttachment;
 
   /// The message content.
   String content;
@@ -52,6 +55,7 @@ class Message {
       this.mailHost,
       this.mailId,
       this.mailPassword,
+      this.mailAttachment,
       this.createdAt,
       this.executedAt,
       this.driver,
@@ -68,6 +72,7 @@ class Message {
     mailHost = data['mailHost'];
     mailId = data['mailId'];
     mailPassword = data['mailPassword'];
+    mailAttachment = data['mailAttachment'];
     createdAt = data['createdAt'];
     executedAt = data['executedAt'];
     driver = MessageDriver.values[
@@ -88,6 +93,7 @@ class Message {
       'mailHost': mailHost,
       'mailId': mailId,
       'mailPassword': mailPassword,
+      'mailAttachment': mailAttachment,
       'createdAt': createdAt,
       'executedAt': executedAt,
       'driver': driver.index,
