@@ -11,6 +11,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.os.Bundle;
 import java.util.List;
 
+
 public class WhatsappAccessibilityService extends AccessibilityService {
     private static final String TAG = "WhatsappAccessibilitySe";
 
@@ -51,6 +52,9 @@ public class WhatsappAccessibilityService extends AccessibilityService {
 //        }
 
         // Whatsapp send button id
+        try {
+            Thread.sleep (500); // hack for certain devices in which the immediate back click is too fast to handle
+        } catch (InterruptedException ignored) {}
         List<AccessibilityNodeInfoCompat> sendMessageNodeInfoList = rootInActiveWindow.findAccessibilityNodeInfosByViewId ("com.whatsapp:id/send");
         if (sendMessageNodeInfoList == null || sendMessageNodeInfoList.isEmpty ()) {
             return;
@@ -60,6 +64,8 @@ public class WhatsappAccessibilityService extends AccessibilityService {
         if (!sendMessageButton.isVisibleToUser ()) {
             return;
         }
+        System.out.println(sendMessageButton);
+
 
         // Now fire a click on the send button
         sendMessageButton.performAction (AccessibilityNodeInfo.ACTION_CLICK);

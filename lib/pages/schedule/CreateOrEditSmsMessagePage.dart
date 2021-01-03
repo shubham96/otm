@@ -73,6 +73,9 @@ class _CreateOrEditSmsMessagePageState
         _gmailSenderMailId.text = widget.message.mailId;
         _gmailSenderMailPassword.text = widget.message.mailPassword;
         _gmailSenderMailAttachment.text = widget.message.mailAttachment;
+      } else if (widget.message.driver == MessageDriver.Whatsapp) {
+        _phoneNumberCtrl.text = widget.message.endpoint;
+        _gmailSenderMailAttachment.text = widget.message.mailAttachment;
       } else
         _phoneNumberCtrl.text = widget.message.endpoint;
 
@@ -474,7 +477,8 @@ class _CreateOrEditSmsMessagePageState
                     labelText: 'Message',
                     icon: Icon(Icons.textsms)),
               ),
-              _driverCtrl == MessageDriver.Email
+              ((_driverCtrl == MessageDriver.Email) ||
+                      (_driverCtrl == MessageDriver.Whatsapp))
                   ? Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
                       IconButton(
                         icon: Icon(FontAwesomeIcons.file, color: Colors.grey),
@@ -624,7 +628,10 @@ class _CreateOrEditSmsMessagePageState
           mailHost: '',
           mailId: '',
           mailPassword: '',
-          mailAttachment: '',
+          mailAttachment: (_driverCtrl == MessageDriver.Whatsapp &&
+                  _gmailSenderMailAttachment.text != '')
+              ? _gmailSenderMailAttachment.text
+              : '',
           createdAt: widget?.message?.createdAt ??
               DateTime.now().millisecondsSinceEpoch,
           attempts: widget?.message?.attempts ?? 0,

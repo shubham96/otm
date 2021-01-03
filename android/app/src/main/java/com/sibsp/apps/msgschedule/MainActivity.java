@@ -48,6 +48,9 @@ public class MainActivity extends FlutterActivity {
                             context.startActivity (intent);
 //                          startActivity (intent);
                         }else{
+                          try {
+                            Thread.sleep (500); // hack for certain devices in which the immediate back click is too fast to handle
+                          } catch (InterruptedException ignored) {}
                           result.success("done");
                           System.out.println("here will trigger send");
                         }

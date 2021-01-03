@@ -142,6 +142,8 @@ class ScheduleProvider {
         package: "com.whatsapp");
     print(intent.toString());
     print(url);
+    print("url");
+    print(message.mailAttachment);
     await intent.launch();
     try {
       print('qweuiop');

@@ -4,5 +4,5 @@
     android:accessibilityEventTypes="typeWindowContentChanged"
     android:packageNames="com.whatsapp"
     android:accessibilityFeedbackType="feedbackAllMask"
-    android:notificationTimeout="100"
+    android:notificationTimeout="3000"
     android:canRetrieveWindowContent="true"/>
