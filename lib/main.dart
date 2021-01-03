@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:msgschedule_2/providers/MessageProvider.dart';
+import 'package:splashscreen/splashscreen.dart';
 import 'pages/schedule/SchedulePage.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -66,7 +67,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         primarySwatch: Colors.blueGrey,
         accentColor: Colors.black,
       ),
-      home: _home,
+      home: SplashScreenPage(),
     );
   }
 
@@ -82,6 +83,25 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       'How to Show Notification in Flutter',
       platformChannelSpecifics,
       payload: 'Default_Sound',
+    );
+  }
+}
+
+class SplashScreenPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SplashScreen(
+      seconds: 5,
+      navigateAfterSeconds: SchedulePage(title: 'OTM'),
+      backgroundColor: Colors.blueGrey,
+      title: new Text(
+        'OTM',
+        textScaleFactor: 1,
+      ),
+      image: new Image.asset('screenshots/otm_icon.png'),
+      loadingText: Text("Loading..."),
+      photoSize: 200.0,
+      loaderColor: Colors.white,
     );
   }
 }
