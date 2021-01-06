@@ -62,7 +62,7 @@ public class WhatsappAccessibilityService extends AccessibilityService {
         System.out.println(triggerTime);
         System.out.println(String.valueOf(System.currentTimeMillis()));
 
-        if(!((System.currentTimeMillis() - triggerTime) < 6000 )){
+        if(!((System.currentTimeMillis() - triggerTime) < 10000 )){
             return;
         }
 
