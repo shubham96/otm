@@ -13,6 +13,8 @@ import 'package:msgschedule_2/providers/DialogProvider.dart';
 import 'package:msgschedule_2/providers/SettingsProvider.dart';
 import 'package:msgschedule_2/SizeConfig.dart';
 
+import '../../SizeConfig.dart';
+
 enum MessageMode { create, edit }
 
 class CreateOrEditSmsMessagePage extends StatefulWidget {
@@ -360,25 +362,34 @@ class _CreateOrEditSmsMessagePageState
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.calendar_today,
-                              color: Colors.white,
-                              size: SizeConfig.safeBlockHorizontal * 4,
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "Select Date",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: SizeConfig.safeBlockHorizontal * 3),
-                            ),
-                          ],
-                        ),
+                        child: _dateCtrl.text != ''
+                            ? Text(
+                                _dateCtrl.text,
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize:
+                                        SizeConfig.safeBlockHorizontal * 4),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today,
+                                    color: Colors.white,
+                                    size: SizeConfig.safeBlockHorizontal * 4,
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    "Select Date",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize:
+                                            SizeConfig.safeBlockHorizontal * 3),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                     decoration: BoxDecoration(
@@ -434,25 +445,34 @@ class _CreateOrEditSmsMessagePageState
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.access_time,
-                              color: Colors.white,
-                              size: SizeConfig.safeBlockHorizontal * 4,
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "Select Time",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: SizeConfig.safeBlockHorizontal * 3),
-                            ),
-                          ],
-                        ),
+                        child: _timeCtrl.text != ''
+                            ? Text(
+                                _timeCtrl.text,
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize:
+                                        SizeConfig.safeBlockHorizontal * 4),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.access_time,
+                                    color: Colors.white,
+                                    size: SizeConfig.safeBlockHorizontal * 4,
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    "Select Time",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize:
+                                            SizeConfig.safeBlockHorizontal * 3),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                     decoration: BoxDecoration(
