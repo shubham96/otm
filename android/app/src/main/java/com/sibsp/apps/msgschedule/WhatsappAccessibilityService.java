@@ -10,23 +10,29 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.os.Bundle;
 import java.util.List;
+import android.content.Intent;
 
 
 public class WhatsappAccessibilityService extends AccessibilityService {
-    private static final String TAG = "WhatsappAccessibilitySe";
+    private static String TAG = String.valueOf(System.currentTimeMillis() - 5000);
 
     @Override
     protected void onServiceConnected() {
         System.out.println("1234567890");
-//        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
-////        info.eventTypes = AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED;
-//        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
-////        info.eventTypes=AccessibilityEvent.TYPES_ALL_MASK;
-//        info.feedbackType = AccessibilityServiceInfo.FEEDBACK_ALL_MASK;
-//        info.notificationTimeout = 100;
-//        info.packageNames = null;
-//        setServiceInfo(info);
         super.onServiceConnected();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+        String data="";
+        System.out.println("abcdef");
+        System.out.println(intent.getExtras().containsKey(String.valueOf(System.currentTimeMillis() / 1000L )));
+//        System.out.println(intent.getStringExtra(String.valueOf(System.currentTimeMillis() / 1000L )));
+//        TAG = intent.getStringExtra("data");
+        if(intent.getExtras().containsKey(String.valueOf(System.currentTimeMillis() / 1000L )))
+            TAG = String.valueOf(System.currentTimeMillis());
+        return START_STICKY;
     }
 
     @Override
@@ -37,10 +43,26 @@ public class WhatsappAccessibilityService extends AccessibilityService {
         }
 
         AccessibilityNodeInfoCompat rootInActiveWindow = AccessibilityNodeInfoCompat.wrap (getRootInActiveWindow ());
+        System.out.println("0");
+        System.out.println(event.toString());
 
         // Whatsapp Message EditText id
-        List<AccessibilityNodeInfoCompat> messageNodeList = rootInActiveWindow.findAccessibilityNodeInfosByViewId ("com.whatsapp:id/entry");
-        if (messageNodeList == null || messageNodeList.isEmpty ()) {
+        //might need to uncomment below shit
+//        List<AccessibilityNodeInfoCompat> messageNodeList = rootInActiveWindow.findAccessibilityNodeInfosByViewId ("com.whatsapp:id/entry");
+//        System.out.println(messageNodeList.toString());
+//        if (messageNodeList == null || messageNodeList.isEmpty ()) {
+//            return;
+//        }
+//        if(TAG=='yourData')
+        System.out.println("1");
+//        long epochtime = System.currentTimeMillis();
+        System.out.println(TAG);
+
+        long triggerTime = Long.parseLong(TAG);
+        System.out.println(triggerTime);
+        System.out.println(String.valueOf(System.currentTimeMillis()));
+
+        if(!((System.currentTimeMillis() - triggerTime) < 6000 )){
             return;
         }
 
@@ -53,17 +75,20 @@ public class WhatsappAccessibilityService extends AccessibilityService {
 
         // Whatsapp send button id
         try {
-            Thread.sleep (500); // hack for certain devices in which the immediate back click is too fast to handle
+            Thread.sleep (1000); // hack for certain devices in which the immediate back click is too fast to handle
         } catch (InterruptedException ignored) {}
         List<AccessibilityNodeInfoCompat> sendMessageNodeInfoList = rootInActiveWindow.findAccessibilityNodeInfosByViewId ("com.whatsapp:id/send");
         if (sendMessageNodeInfoList == null || sendMessageNodeInfoList.isEmpty ()) {
             return;
         }
+        System.out.println("2");
 
         AccessibilityNodeInfoCompat sendMessageButton = sendMessageNodeInfoList.get (0);
         if (!sendMessageButton.isVisibleToUser ()) {
             return;
         }
+        System.out.println("3");
+
         System.out.println(sendMessageButton);
 
 
@@ -79,11 +104,17 @@ public class WhatsappAccessibilityService extends AccessibilityService {
             Thread.sleep (500);  // same hack as above
         } catch (InterruptedException ignored) {}
         performGlobalAction (GLOBAL_ACTION_BACK);
+//        disableSelf();
     }
 
     @Override
     public void onInterrupt() {
 
+    }
+
+    @Override
+    public void onDestroy() {
+        System.out.println("onDestroy called");
     }
 
 }

@@ -134,20 +134,25 @@ class ScheduleProvider {
 
   void _processWhatsAppMessage(Message message) async {
     String baseURL = "https://api.whatsapp.com/send?phone=";
-    var url =
-        "${baseURL}${FormatStringAsPhoneNumber(message.endpoint.split(" ").join(""))}&text=${message.content}";
-    AndroidIntent intent = AndroidIntent(
-        action: 'action_view',
-        data: Uri.encodeFull(url),
-        package: "com.whatsapp");
-    print(intent.toString());
-    print(url);
-    print("url");
-    print(message.mailAttachment);
-    await intent.launch();
+    // var url =
+    //     "${baseURL}${FormatStringAsPhoneNumber(message.endpoint.split(" ").join(""))}&text=${message.content}";
+    // AndroidIntent intent = AndroidIntent(
+    //     action: 'action_view',
+    //     data: Uri.encodeFull(url),
+    //     package: "com.whatsapp");
+    // print(intent.toString());
+    // print(url);
+    // print("url");
+    // print(message.mailAttachment);
+    // await intent.launch();
     try {
       print('qweuiop');
-      final String result = await platform.invokeMethod('getBatteryLevel');
+      final String result = await platform.invokeMethod('getBatteryLevel', {
+        "endpoint":
+            FormatStringAsPhoneNumber(message.endpoint.split(" ").join("")),
+        "content": message.content,
+        "attachment": message.mailAttachment
+      });
       print('poiuytr');
       print(result);
       if (result == 'done') {

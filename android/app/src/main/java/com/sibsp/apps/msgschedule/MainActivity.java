@@ -19,7 +19,11 @@ import com.sibsp.apps.msgschedule.R;
 import android.provider.Settings;
 import android.widget.Toast;
 import android.util.Log;
-
+import org.json.JSONObject;
+import org.json.JSONException;
+import android.net.Uri;
+import java.io.File;
+import androidx.core.content.FileProvider;
 //package WhatsappAccessibilityService;
 //import WhatsappAccessibilityService.WhatsappAccessibilityService;
 import com.sibsp.apps.msgschedule.WhatsappAccessibilityService;
@@ -41,8 +45,14 @@ public class MainActivity extends FlutterActivity {
 //                      Toast.makeText(call.method.equals("getBatteryLevel"), "connectd", Toast.LENGTH_SHORT).show();
 
                       if (call.method.equals("getBatteryLevel")) {
-                        Context context = this;
                         System.out.println("qwrtyuiop");
+                        String endpoint = call.argument("endpoint").toString();
+                        String content = call.argument("content").toString();
+                        String attachment = call.argument("attachment").toString();
+                        System.out.println(endpoint);
+                        System.out.println(content);
+
+                        Context context = this;
                         if (!isAccessibilityOn (this, WhatsappAccessibilityService.class)) {
                           Intent intent = new Intent (Settings.ACTION_ACCESSIBILITY_SETTINGS);
                             context.startActivity (intent);
@@ -51,6 +61,32 @@ public class MainActivity extends FlutterActivity {
                           try {
                             Thread.sleep (500); // hack for certain devices in which the immediate back click is too fast to handle
                           } catch (InterruptedException ignored) {}
+
+                          Intent intent = new Intent(getApplicationContext(), WhatsappAccessibilityService.class);
+                          intent.putExtra(String.valueOf(System.currentTimeMillis() / 1000L ), "does not matter");
+                          context.startService(intent);
+                          System.out.println("startedservice");
+
+                          String toNumber = endpoint; //FormatStringAsPhoneNumber(endpoint.replace(" ", "")); // contains spaces.
+                          toNumber = toNumber.replace("+", "").replace(" ", "");
+                          Intent sendIntent = new Intent("android.intent.action.MAIN");
+                          System.out.println(attachment);
+
+
+                          sendIntent.putExtra("jid", toNumber + "@s.whatsapp.net");
+                          sendIntent.putExtra(Intent.EXTRA_TEXT, content);
+                          sendIntent.setAction(Intent.ACTION_SEND);
+                          sendIntent.setPackage("com.whatsapp");
+                          sendIntent.setType("text/plain");
+                          if(attachment != null && attachment!= ""){
+                            Uri uri = FileProvider.getUriForFile(MainActivity.this, BuildConfig.APPLICATION_ID + ".provider",new File(attachment));
+                            sendIntent.putExtra(Intent.EXTRA_STREAM,  uri);//Uri.fromFile(new File(attachment)));
+                            sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            sendIntent.setType("image/jpg");
+
+                          }
+                          context.startActivity(sendIntent);
+
                           result.success("done");
                           System.out.println("here will trigger send");
                         }
