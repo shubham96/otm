@@ -20,6 +20,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget _home;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
+  ScrollController _controller = ScrollController();
+
   _MyAppState();
 
   @override
