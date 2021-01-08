@@ -4,14 +4,18 @@ import 'dart:convert';
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:msgschedule_2/blocs/MessageBloc.dart';
 
 import 'package:msgschedule_2/models/Message.dart';
+import 'package:msgschedule_2/models/Settings.dart';
 import 'package:msgschedule_2/pages/schedule/ArchivedMessages.dart';
 import 'package:msgschedule_2/pages/schedule/CreateOrEditSmsMessagePage.dart';
 import 'package:msgschedule_2/pages/settings/SettingsPage.dart';
 import 'package:msgschedule_2/providers/DialogProvider.dart';
 import 'package:msgschedule_2/providers/ScheduleProvider.dart';
+import 'package:msgschedule_2/providers/SettingsProvider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import './Schedule.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     hide Message;
@@ -42,10 +46,31 @@ class _SchedulePageState extends State<SchedulePage>
   List<Message> _messages;
   Timer _refreshTimer;
 
+  static const platform = const MethodChannel('samples.flutter.dev/battery');
+
   static const segmentAll = 1;
   static const segmentDone = 2;
 
   static const _iconSize = 28.0;
+
+  Settings _settings = SettingsProvider.getDefaultSettings();
+
+  final keyIsFirstLoaded = 'is_first_loaded';
+
+  SharedPreferences prefs;
+
+  void _loadSettings() async {
+    prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey('AccessibilitySettingsEnabled') == false) {
+      await platform.invokeMethod('checkAccessibility');
+      final Settings settings =
+          await SettingsProvider.getInstance().getSettings();
+
+      prefs.setString('AccessibilitySettingsEnabled', '1');
+
+      setState(() => _settings = settings);
+    }
+  }
 
   /// loads messages.
   void _refreshMessages() => _messageBloc.loadMessages();
@@ -74,6 +99,97 @@ class _SchedulePageState extends State<SchedulePage>
 
     _refreshTimer =
         Timer.periodic(Duration(seconds: 30), (Timer t) => _refreshMessages());
+
+    // _loadSettings();
+  }
+
+  _showDialogWhenFirstLoaded(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isFirstLoaded = prefs.getBool(keyIsFirstLoaded);
+
+    if (isFirstLoaded == null) {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return Dialog(
+              child: Container(
+                height: MediaQuery.of(context).size.height / 2,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Welcome to OTM, \n The Mother of all Prophets",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: SizeConfig.safeBlockHorizontal * 5),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "OTM schedules your important messages for you so that you can rest while you communicate.",
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "To Enable the automation of your messages, you need to enable the accessibility settings",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: SizeConfig.safeBlockHorizontal * 4),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "Your security is our absolute concern, but please note that in order for Email automation, Less Secure app needs to be allowed",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: SizeConfig.safeBlockHorizontal * 4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        await _loadSettings();
+                        Navigator.of(context).pop();
+                        prefs.setBool(keyIsFirstLoaded, false);
+                      },
+                      child: Container(
+                        color: Colors.blueGrey,
+                        width: double.infinity,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Center(
+                            child: Text(
+                              'Go to Accessibility',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: SizeConfig.safeBlockHorizontal * 5),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          });
+    }
   }
 
   @override
@@ -93,6 +209,7 @@ class _SchedulePageState extends State<SchedulePage>
   Widget build(BuildContext context) {
     debugPrint('SchedulePage.build()');
     SizeConfig().init(context);
+    Future.delayed(Duration.zero, () => _showDialogWhenFirstLoaded(context));
     return Scaffold(
       appBar: AppBar(
           title: Text(
