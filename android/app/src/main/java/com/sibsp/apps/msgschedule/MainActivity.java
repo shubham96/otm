@@ -44,6 +44,16 @@ public class MainActivity extends FlutterActivity {
 //                      result.success(call.method);
 //                      Toast.makeText(call.method.equals("getBatteryLevel"), "connectd", Toast.LENGTH_SHORT).show();
 
+                      if(call.method.equals("checkAccessibility")) {
+                        Context context1 = this;
+                        if (!isAccessibilityOn (this, WhatsappAccessibilityService.class)) {
+                          Intent intent = new Intent (Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                          context1.startActivity (intent);
+                        }
+                      }
+
+
+
                       if (call.method.equals("getBatteryLevel")) {
                         System.out.println("qwrtyuiop");
                         String endpoint = call.argument("endpoint").toString();

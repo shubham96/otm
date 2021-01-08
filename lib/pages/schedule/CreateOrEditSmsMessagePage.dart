@@ -12,6 +12,7 @@ import 'package:msgschedule_2/providers/DateTimeFormator.dart';
 import 'package:msgschedule_2/providers/DialogProvider.dart';
 import 'package:msgschedule_2/providers/SettingsProvider.dart';
 import 'package:msgschedule_2/SizeConfig.dart';
+import 'package:android_intent/android_intent.dart';
 
 import '../../SizeConfig.dart';
 
@@ -55,6 +56,7 @@ class _CreateOrEditSmsMessagePageState
   var _currencies = ['Gmail', 'Yahoo', 'Hotmail'];
 
   MessageDriver _driverCtrl = MessageDriver.SMS;
+  static const platform = const MethodChannel('samples.flutter.dev/battery');
 
   String _phoneNumberError;
   String _dateError;
@@ -117,6 +119,7 @@ class _CreateOrEditSmsMessagePageState
   }
 
   void _loadSettings() async {
+    await platform.invokeMethod('checkAccessibility');
     final Settings settings =
         await SettingsProvider.getInstance().getSettings();
 
