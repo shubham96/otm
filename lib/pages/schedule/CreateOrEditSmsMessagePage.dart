@@ -1,3 +1,5 @@
+import 'package:android_intent/android_intent.dart';
+import 'package:app_settings/app_settings.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +15,7 @@ import 'package:msgschedule_2/providers/DialogProvider.dart';
 import 'package:msgschedule_2/providers/SettingsProvider.dart';
 import 'package:msgschedule_2/SizeConfig.dart';
 import 'package:android_intent/android_intent.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../SizeConfig.dart';
 
@@ -58,6 +61,10 @@ class _CreateOrEditSmsMessagePageState
   MessageDriver _driverCtrl = MessageDriver.SMS;
   static const platform = const MethodChannel('samples.flutter.dev/battery');
 
+  SharedPreferences prefs;
+
+  void openAccessibilitySettings() async {}
+
   String _phoneNumberError;
   String _dateError;
   String _timeError;
@@ -66,9 +73,17 @@ class _CreateOrEditSmsMessagePageState
   String _gmailSenderMailIdError;
   String _gmailSenderMailPasswordError;
 
+  void getLocalPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+  }
+
   @override
   void initState() {
     super.initState();
+
+    // openAccessibilitySettings();
+
+    getLocalPreferences();
 
     if (widget.messageMode == MessageMode.edit) {
       if (widget.message.driver == MessageDriver.Email) {
@@ -225,39 +240,56 @@ class _CreateOrEditSmsMessagePageState
                     )
                   : Text(''),
               _driverCtrl == MessageDriver.Email
-                  ? TextFormField(
-                      controller: _gmailSenderMailId,
-                      maxLength: null,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        hintText: 'From Email ID',
-                        hintStyle: TextStyle(
-                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
-                        labelText: 'From Email ID',
-                        labelStyle: TextStyle(
-                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
-                        icon: Icon(
-                          Icons.mail,
-                          size: SizeConfig.safeBlockHorizontal * 8,
-                        ),
-                      ),
-                    )
+                  ? prefs.getString('email') != null
+                      ? SizedBox(
+                          height: 0,
+                          width: 0,
+                        )
+                      : TextFormField(
+                          controller: _gmailSenderMailId,
+                          onChanged: (value) {
+                            prefs.setString('email', value);
+                          },
+                          maxLength: null,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            hintText: 'From Email ID',
+                            hintStyle: TextStyle(
+                                fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                            labelText: 'From Email ID',
+                            labelStyle: TextStyle(
+                                fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                            icon: Icon(
+                              Icons.mail,
+                              size: SizeConfig.safeBlockHorizontal * 8,
+                            ),
+                          ),
+                        )
                   : Text(''),
               _driverCtrl == MessageDriver.Email
-                  ? TextFormField(
-                      controller: _gmailSenderMailPassword,
-                      maxLength: null,
-                      keyboardType: TextInputType.visiblePassword,
-                      decoration: InputDecoration(
-                        hintStyle: TextStyle(
-                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
-                        labelStyle: TextStyle(
-                            fontSize: SizeConfig.safeBlockHorizontal * 3.5),
-                        labelText: 'From Email Password',
-                        icon: Icon(Icons.mail),
-                        hintText: 'From Email ID Password',
-                      ),
-                    )
+                  ? prefs.getString('password') != null
+                      ? SizedBox(
+                          height: 0,
+                          width: 0,
+                        )
+                      : TextFormField(
+                          onEditingComplete: () {
+                            prefs.setString(
+                                'password', _gmailSenderMailPassword.text);
+                          },
+                          controller: _gmailSenderMailPassword,
+                          maxLength: null,
+                          keyboardType: TextInputType.visiblePassword,
+                          decoration: InputDecoration(
+                            hintStyle: TextStyle(
+                                fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                            labelStyle: TextStyle(
+                                fontSize: SizeConfig.safeBlockHorizontal * 3.5),
+                            labelText: 'From Email Password',
+                            icon: Icon(Icons.mail),
+                            hintText: 'From Email ID Password',
+                          ),
+                        )
                   : Text(''),
               _driverCtrl == MessageDriver.Email
                   ? TextFormField(
@@ -631,8 +663,8 @@ class _CreateOrEditSmsMessagePageState
           content: _messageCtrl.text,
           subject: _mailSubjectCtrl.text,
           mailHost: _gmailSenderMailHost.text,
-          mailId: _gmailSenderMailId.text,
-          mailPassword: _gmailSenderMailPassword.text,
+          mailId: prefs.getString('email'),
+          mailPassword: prefs.getString('password'),
           mailAttachment: _gmailSenderMailAttachment.text,
           createdAt: widget?.message?.createdAt ??
               DateTime.now().millisecondsSinceEpoch,

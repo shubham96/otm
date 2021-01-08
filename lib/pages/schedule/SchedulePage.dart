@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:msgschedule_2/blocs/MessageBloc.dart';
@@ -52,6 +53,7 @@ class _SchedulePageState extends State<SchedulePage>
   @override
   void initState() {
     super.initState();
+
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
     flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
     var android = new AndroidInitializationSettings('@mipmap/ic_launcher');
